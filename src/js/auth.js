@@ -3,19 +3,8 @@
 const SUPABASE_URL      = window.__SUPABASE_URL__      || '';
 const SUPABASE_ANON_KEY = window.__SUPABASE_ANON_KEY__ || '';
 
-// Modo demo: ativo quando as credenciais não estão configuradas
-const DEMO_MODE = !SUPABASE_URL || !SUPABASE_ANON_KEY;
-
-// Usuário demo pré-cadastrado (desabilitado em produção)
-const DEMO_USER = {
-  id:    'demo-kaio-melo-001',
-  nome:  'Kaio Melo',
-  email: 'kaiomelo@concrem.com.br',
-  nivel: 'administrador',
-  ativo: true,
-};
-const DEMO_PASSWORD = '1234';
-const DEMO_SESSION_KEY = 'concrem_demo_session';
+// Mantido como false — todos os usuários devem estar no Supabase
+const DEMO_MODE = false;
 
 // ── PERMISSÕES PADRÃO POR PERFIL ─────────────────────────────────────────────
 const PERMISSOES_PADRAO = {
@@ -46,12 +35,9 @@ const PERMISSOES_PADRAO = {
 };
 window.permissoes = {};
 
-let _sb = null;
-if (!DEMO_MODE) {
-  _sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-    auth: { storage: window.sessionStorage },
-  });
-}
+const _sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: { storage: window.sessionStorage },
+});
 
 // ── ESTADO GLOBAL DO USUÁRIO ─────────────────────────────────────────────────
 let currentUser = null; // { id, nome, email, nivel }
@@ -84,10 +70,6 @@ window.temPermissao = temPermissao;
 
 async function carregarPermissoes(nivel, userId) {
   const base = { ...(PERMISSOES_PADRAO[nivel] || PERMISSOES_PADRAO.vendedor) };
-  if (DEMO_MODE || sessionStorage.getItem(DEMO_SESSION_KEY) === 'ativa') {
-    window.permissoes = base;
-    return;
-  }
   try {
     const timeout = new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 8000));
     const [perfRes, usrRes] = await Promise.race([
@@ -181,7 +163,6 @@ function atualizarSidebarUsuario(user) {
 
 // ── BUSCAR PERFIL DO USUÁRIO ──────────────────────────────────────────────────
 async function buscarPerfil(userId) {
-  if (DEMO_MODE) return DEMO_USER;
   try {
     const result = await Promise.race([
       _sb.from('concremtp_usuarios').select('id, nome, email, nivel, ativo').eq('id', userId).single(),
@@ -206,21 +187,8 @@ async function _loginSucesso(perfil) {
   initApp();
 }
 
-// Sessão demo tem prioridade — funciona mesmo com Supabase configurado
-const sessaoDemo = sessionStorage.getItem(DEMO_SESSION_KEY);
-if (sessaoDemo === 'ativa') {
-  (async () => {
-    try {
-      await _loginSucesso(DEMO_USER);
-    } catch (err) {
-      sessionStorage.removeItem(DEMO_SESSION_KEY);
-      mostrarLogin();
-      mostrarErroLogin('Erro ao restaurar sessão: ' + (err && err.message || err));
-    }
-  })();
-} else if (DEMO_MODE) {
-  mostrarLogin();
-} else {
+// Inicializa sessão via Supabase
+{
   let _loginInProgress = false;
   _sb.auth.onAuthStateChange(async (event, session) => {
     // TOKEN_REFRESHED e USER_UPDATED não devem reinicializar o app
@@ -264,29 +232,6 @@ document.getElementById('login-form').addEventListener('submit', async e => {
   btn.disabled = true;
   btn.innerHTML = '<span class="login-spinner"></span> Entrando…';
   mostrarErroLogin('');
-
-  // Credenciais demo sempre funcionam, independente de o Supabase estar configurado
-  if (email === DEMO_USER.email && password === DEMO_PASSWORD) {
-    await new Promise(r => setTimeout(r, 400));
-    sessionStorage.setItem(DEMO_SESSION_KEY, 'ativa');
-    try {
-      await _loginSucesso(DEMO_USER);
-    } catch (err) {
-      btn.disabled = false;
-      btn.innerHTML = 'Entrar →';
-      mostrarErroLogin('Erro ao inicializar: ' + (err && err.message || err));
-    }
-    return;
-  }
-
-  if (DEMO_MODE) {
-    // Modo demo sem Supabase: qualquer outra credencial falha
-    await new Promise(r => setTimeout(r, 400));
-    btn.disabled = false;
-    btn.innerHTML = 'Entrar →';
-    mostrarErroLogin('E-mail ou senha incorretos.');
-    return;
-  }
 
   try {
     const authResult = await Promise.race([
@@ -338,14 +283,9 @@ document.getElementById('forgot-password').addEventListener('click', async e => 
 
 // ── LOGOUT ────────────────────────────────────────────────────────────────────
 document.getElementById('logout-btn').addEventListener('click', async () => {
-  sessionStorage.removeItem(DEMO_SESSION_KEY);
   currentUser = null;
-  if (!DEMO_MODE && _sb) {
-    await _sb.auth.signOut();
-    // onAuthStateChange trata mostrarLogin()
-  } else {
-    mostrarLogin();
-  }
+  await _sb.auth.signOut();
+  // onAuthStateChange trata mostrarLogin()
 });
 
 // ── HOOK PÓS-RENDER ───────────────────────────────────────────────────────────
