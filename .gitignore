@@ -6,7 +6,7 @@
 # Dependências
 node_modules/
 
-# Build output
+# Build output (gerado pelo Vercel, não commitar)
 dist/
 
 # Claude Code internal

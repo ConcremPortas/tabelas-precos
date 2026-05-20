@@ -4,6 +4,7 @@
   "description": "Tabela de preços comerciais — Portas & Acabamentos CONCREM",
   "scripts": {
     "dev": "vite",
+    "build": "vite build && node build-post.cjs",
     "preview": "vite preview"
   },
   "devDependencies": {
