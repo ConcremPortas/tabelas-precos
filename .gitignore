@@ -1,0 +1,17 @@
+# Credenciais — nunca subir
+.env
+.env.local
+.env.*.local
+
+# Dependências
+node_modules/
+
+# Build output
+dist/
+
+# Claude Code internal
+.claude/
+
+# OS
+.DS_Store
+Thumbs.db

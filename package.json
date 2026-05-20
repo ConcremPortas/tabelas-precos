@@ -1,0 +1,12 @@
+{
+  "name": "concrem-tabela-de-valores",
+  "version": "1.0.0",
+  "description": "Tabela de preços comerciais — Portas & Acabamentos CONCREM",
+  "scripts": {
+    "dev": "vite",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^6.0.0"
+  }
+}
