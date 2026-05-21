@@ -972,7 +972,7 @@ function _hrTable(entries) {
     const isAll = e.linha === '___all';
     const linhaLabel = isAll ? '<em style="color:#6b7280">Todas as linhas</em>' : (e.linha || '—');
     const canal = RJ_CANAL_LABELS[e.canal] || e.canal;
-    const hasSnapshot = isAll && Array.isArray(e.linhasSnapshot) && e.linhasSnapshot.length > 0;
+    const hasSnapshot = Array.isArray(e.linhasSnapshot) && e.linhasSnapshot.length > 0;
 
     const mainRow = `<tr>
       <td class="hr-td-date">${dtF}</td>
@@ -980,7 +980,7 @@ function _hrTable(entries) {
       <td>${canal}</td>
       <td>${linhaLabel}</td>
       <td class="hr-td-pct">${fmtPct(e.porcentagem)}</td>
-      <td class="hr-td-base">${isAll ? '—' : fmtCur(e.sampleAntes)}</td>
+      <td class="hr-td-base">${fmtCur(e.sampleAntes)}</td>
       <td class="hr-td-motivo" title="${(e.motivo||'').replace(/"/g,'&quot;')}">${e.motivo || '—'}</td>
       <td style="white-space:nowrap;display:flex;gap:6px;align-items:center">
         ${hasSnapshot ? `<button id="hr-detbtn-${e.id}" class="hr-detail-btn" onclick="hrToggleDetail('${e.id}')">Ver detalhes ▼</button>` : ''}
