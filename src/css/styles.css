@@ -2459,13 +2459,13 @@
   .gm-toast-ok    { background: var(--color-primary); color: white; }
   .gm-toast-error { background: var(--color-error); color: white; }
 
-/* ── Tabler Icons: @font-face explícito (evita falha de carregamento via CDN) ── */
+/* ── Tabler Icons: @font-face local (sem dependência de CDN externo) ── */
 @font-face {
   font-family: 'tabler-icons';
   font-style: normal;
   font-weight: 400;
   font-display: block;
-  src: url('https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.47.0/fonts/tabler-icons.woff2') format('woff2'),
-       url('https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.47.0/fonts/tabler-icons.woff') format('woff'),
-       url('https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.47.0/fonts/tabler-icons.ttf') format('truetype');
+  src: url('../fonts/tabler/fonts/tabler-icons.woff2') format('woff2'),
+       url('../fonts/tabler/fonts/tabler-icons.woff') format('woff'),
+       url('../fonts/tabler/fonts/tabler-icons.ttf') format('truetype');
 }

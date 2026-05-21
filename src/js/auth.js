@@ -40,7 +40,9 @@ const _sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
 });
 
 // ── ESTADO GLOBAL DO USUÁRIO ─────────────────────────────────────────────────
-let currentUser = null; // { id, nome, email, nivel }
+let currentUser      = null;  // { id, nome, email, nivel }
+let _appInicializado = false; // evita duplo render ao recarregar com sessão ativa
+let _loginEmProgresso = false;
 
 // ── CONTROLE DE ACESSO ────────────────────────────────────────────────────────
 // Seções permitidas por nível
@@ -183,24 +185,60 @@ function atualizarSidebarUsuario(user) {
 // ── BUSCAR PERFIL DO USUÁRIO ──────────────────────────────────────────────────
 async function buscarPerfil(userId) {
   console.log('[auth] buscarPerfil — userId:', userId);
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => {
+    controller.abort();
+    console.warn('[auth] buscarPerfil — abortado por timeout (15s)');
+  }, 15000);
+
   try {
-    const result = await Promise.race([
-      _sb.from('concremtp_usuarios').select('id, nome, email, nivel, ativo').eq('id', userId).single(),
-      new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 8000)),
-    ]);
-    if (result.error) {
-      console.error('[auth] buscarPerfil — erro Supabase:', result.error);
+    const { data, error } = await _sb
+      .from('concremtp_usuarios')
+      .select('*')
+      .eq('id', userId)
+      .abortSignal(controller.signal)
+      .maybeSingle();
+
+    clearTimeout(timeoutId);
+
+    if (error) {
+      if (error.name === 'AbortError') {
+        console.error('[auth] buscarPerfil — timeout: Supabase não respondeu em 15s');
+        mostrarErroLogin('Servidor demorou para responder. Verifique sua conexão e tente novamente.');
+        return null;
+      }
+      console.error('[auth] buscarPerfil — erro:', error.message, error.code);
+      mostrarErroLogin('Erro ao carregar perfil: ' + error.message);
       return null;
     }
-    if (!result.data) {
-      console.warn('[auth] buscarPerfil — nenhum registro encontrado para userId:', userId,
-        '. Verifique se o usuário existe na tabela concremtp_usuarios com o mesmo id do Auth.');
+
+    if (!data) {
+      console.warn('[auth] buscarPerfil — usuário não encontrado:', userId);
+      mostrarErroLogin('Usuário não encontrado. Contate o administrador.');
+      await _sb.auth.signOut();
       return null;
     }
-    console.log('[auth] buscarPerfil — perfil encontrado:', result.data.nome, '|', result.data.nivel);
-    return result.data;
-  } catch (err) {
-    console.error('[auth] buscarPerfil — exceção:', err && err.message || err);
+
+    if (!data.ativo) {
+      console.warn('[auth] buscarPerfil — conta inativa:', userId);
+      mostrarErroLogin('Conta inativa. Contate o administrador.');
+      await _sb.auth.signOut();
+      return null;
+    }
+
+    console.log('[auth] buscarPerfil — OK:', data.nome, data.nivel);
+    return data;
+
+  } catch (e) {
+    clearTimeout(timeoutId);
+    if (e.name === 'AbortError') {
+      console.error('[auth] buscarPerfil — AbortError (15s sem resposta)');
+      mostrarErroLogin('Servidor não respondeu. Verifique sua conexão.');
+    } else {
+      console.error('[auth] buscarPerfil — exceção:', e.message);
+      mostrarErroLogin('Erro inesperado. Tente novamente.');
+    }
     return null;
   }
 }
@@ -222,66 +260,55 @@ async function _loginSucesso(perfil) {
   console.log('[auth] _loginSucesso — app inicializado.');
 }
 
-// Inicializa sessão via Supabase
-{
-  let _loginInProgress = false;
-  _sb.auth.onAuthStateChange(async (event, session) => {
-    console.log('[auth] onAuthStateChange — event:', event, '| session:', session ? 'presente' : 'nula');
+// ── INICIALIZAR APP APÓS LOGIN ────────────────────────────────────────────────
+async function iniciarApp(userId) {
+  const perfil = await buscarPerfil(userId);
+  if (!perfil) {
+    // buscarPerfil já chamou signOut e mostrarErroLogin quando necessário
+    mostrarLogin();
+    _appInicializado = false;
+    return;
+  }
+  await _loginSucesso(perfil);
+}
 
-    // TOKEN_REFRESHED e USER_UPDATED não devem reinicializar o app
-    if (event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {
-      console.log('[auth] onAuthStateChange — ignorado (evento de refresh/update).');
+// ── LISTENER DE AUTENTICAÇÃO ──────────────────────────────────────────────────
+_sb.auth.onAuthStateChange(async (event, session) => {
+  console.log('[auth] onAuthStateChange — event:', event, '| session:', session ? 'presente' : 'ausente');
+
+  // Ignorar refresh de token e atualização de perfil — não reinicializam o app
+  if (event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {
+    console.log('[auth] onAuthStateChange — ignorado (refresh/update).');
+    return;
+  }
+
+  // Logout
+  if (event === 'SIGNED_OUT' || !session) {
+    console.log('[auth] onAuthStateChange — sem sessão → mostrar login.');
+    _appInicializado  = false;
+    _loginEmProgresso = false;
+    currentUser       = null;
+    mostrarLogin();
+    return;
+  }
+
+  // Login/sessão restaurada
+  if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
+    // Ignorar se o login está sendo processado pelo formulário (evita disparo duplo)
+    if (_loginEmProgresso) {
+      console.log('[auth] onAuthStateChange — ignorado (login já em progresso pelo formulário).');
       return;
     }
-
-    if (session?.user) {
-      // Já autenticado ou login em andamento — ignorar disparo duplo
-      if (currentUser) {
-        console.log('[auth] onAuthStateChange — ignorado (currentUser já definido).');
-        return;
-      }
-      if (_loginInProgress) {
-        console.log('[auth] onAuthStateChange — ignorado (login já em progresso).');
-        return;
-      }
-      _loginInProgress = true;
-      console.log('[auth] onAuthStateChange — iniciando login para userId:', session.user.id);
-
-      try {
-        const perfil = await buscarPerfil(session.user.id);
-        if (!perfil) {
-          console.error('[auth] onAuthStateChange — buscarPerfil retornou null.',
-            'Verifique se o usuário existe na tabela concremtp_usuarios com id =', session.user.id);
-          _loginInProgress = false; // liberar antes do signOut para não bloquear novo login simultâneo
-          await _sb.auth.signOut();
-          mostrarLogin();
-          mostrarErroLogin('Usuário não encontrado no sistema. Contate o administrador.');
-          return;
-        }
-        if (!perfil.ativo) {
-          console.warn('[auth] onAuthStateChange — usuário inativo:', perfil.nome);
-          _loginInProgress = false;
-          await _sb.auth.signOut();
-          mostrarLogin();
-          mostrarErroLogin('Conta inativa. Contate o administrador.');
-          return;
-        }
-        await _loginSucesso(perfil);
-      } catch (err) {
-        console.error('[auth] onAuthStateChange — exceção durante login:', err && err.message || err, err);
-        mostrarLogin();
-        mostrarErroLogin('Erro ao inicializar: ' + (err && err.message || err));
-      } finally {
-        _loginInProgress = false;
-      }
-    } else {
-      console.log('[auth] onAuthStateChange — sem sessão → mostrar tela de login.');
-      _loginInProgress = false;
-      mostrarLogin();
-      currentUser = null;
+    // Ignorar se o app já está inicializado para este mesmo usuário
+    if (_appInicializado && currentUser?.id === session.user.id) {
+      console.log('[auth] onAuthStateChange — app já inicializado para este usuário, ignorando.');
+      return;
     }
-  });
-}
+    _appInicializado = true;
+    console.log('[auth] onAuthStateChange — iniciando app para userId:', session.user.id);
+    await iniciarApp(session.user.id);
+  }
+});
 
 // ── FORMULÁRIO DE LOGIN ───────────────────────────────────────────────────────
 document.getElementById('login-form').addEventListener('submit', async e => {
@@ -302,6 +329,7 @@ document.getElementById('login-form').addEventListener('submit', async e => {
   mostrarErroLogin('');
 
   console.log('[auth] signInWithPassword — email:', email);
+  _loginEmProgresso = true; // bloqueia o onAuthStateChange de processar o SIGNED_IN duplicado
 
   try {
     const authResult = await Promise.race([
@@ -311,40 +339,32 @@ document.getElementById('login-form').addEventListener('submit', async e => {
 
     if (authResult.error) {
       console.error('[auth] signInWithPassword — erro:', authResult.error.message, authResult.error);
-      // O onAuthStateChange não vai disparar em caso de erro — reabilitar botão aqui
       mostrarErroLogin('E-mail ou senha incorretos.');
       btn.disabled = false;
       btn.innerHTML = 'Entrar →';
+      _loginEmProgresso = false;
       return;
     }
 
-    console.log('[auth] signInWithPassword — sucesso. Aguardando onAuthStateChange…');
-    // Sucesso: onAuthStateChange irá chamar _loginSucesso e depois initApp.
-    // O botão permanece desabilitado até o app carregar (ocultarLogin cancela o timer abaixo).
-    // Timeout de segurança: se onAuthStateChange não disparar em 12s, reabilita o botão.
+    console.log('[auth] signInWithPassword — sucesso. Iniciando app diretamente…');
+    // Formulário processa o login diretamente (onAuthStateChange bloqueado pelo flag)
+    _appInicializado = true;
+    await iniciarApp(authResult.data.user.id);
+    _loginEmProgresso = false;
+
+    // BUG 3 — timer de segurança: 30s como fallback se iniciarApp travar
     if (_loginSafetyTimer) clearTimeout(_loginSafetyTimer);
-    _loginSafetyTimer = setTimeout(async () => {
+    _loginSafetyTimer = setTimeout(() => {
       _loginSafetyTimer = null;
       if (!currentUser) {
-        console.warn('[auth] Timeout de segurança: onAuthStateChange não disparou em 12s após signIn. Tentando recuperar sessão…');
-        // Tenta recuperar: pode ter havido race condition com um check anterior
-        try {
-          const { data: { session: sess } } = await _sb.auth.getSession();
-          if (sess?.user) {
-            const perfil = await buscarPerfil(sess.user.id);
-            if (perfil && perfil.ativo) {
-              await _loginSucesso(perfil);
-              return;
-            }
-          }
-        } catch (e) {
-          console.error('[auth] Recuperação de sessão falhou:', e);
-        }
-        mostrarErroLogin('Tempo limite excedido ao carregar o perfil. Verifique sua conexão e tente novamente.');
+        console.warn('[auth] Timeout de segurança (30s): login não concluído.');
+        mostrarErroLogin('Tempo limite excedido. Verifique sua conexão e tente novamente.');
         btn.disabled = false;
         btn.innerHTML = 'Entrar →';
+        _loginEmProgresso = false;
+        _appInicializado  = false;
       }
-    }, 12000);
+    }, 30000);
 
   } catch (err) {
     console.error('[auth] signInWithPassword — exceção:', err && err.message || err);
@@ -355,6 +375,7 @@ document.getElementById('login-form').addEventListener('submit', async e => {
     );
     btn.disabled = false;
     btn.innerHTML = 'Entrar →';
+    _loginEmProgresso = false;
   }
 });
 
