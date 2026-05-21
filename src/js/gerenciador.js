@@ -1023,40 +1023,46 @@ async function gmExecuteSave() {
         var larg    = e.changes.larguras;
         var largAnt = e.changes.larguras_antes || {};
 
-        // Calcular percentual médio de mudança (usando todas as larguras disponíveis)
+        // Snapshot apenas das larguras que mudaram, no formato {grupo, linha, antes, depois}
+        var snapshot = [];
         var pctTotal = 0; var pctCount = 0;
-        Object.keys(larg).forEach(function(w) {
-          var novo  = larg[w];
-          var antes = largAnt[w];
-          if (antes && antes > 0 && novo != null) {
-            pctTotal += ((novo - antes) / antes) * 100;
-            pctCount++;
+        Object.keys(larg).sort(function(a,b){return +a - +b;}).forEach(function(w) {
+          var antes  = largAnt[w] != null ? largAnt[w] : null;
+          var depois = larg[w];
+          var mudou  = antes == null || Math.abs(depois - antes) > 0.001;
+          if (mudou) {
+            snapshot.push({
+              grupo:  e.colecao + ' — ' + e.grupo,
+              linha:  e.desc + ' — ' + w + ' cm',
+              antes:  antes,
+              depois: depois,
+            });
+            if (antes && antes > 0) {
+              pctTotal += ((depois - antes) / antes) * 100;
+              pctCount++;
+            }
           }
         });
-        var pct = pctCount > 0 ? +(pctTotal / pctCount).toFixed(2) : 0;
 
-        // Preço amostra (60cm, ou primeiro disponível)
-        var sampleAntes = largAnt['60'] || largAnt[Object.keys(largAnt)[0]] || null;
+        if (!snapshot.length) continue; // nada mudou de fato
 
-        // Snapshot linha a linha
-        var snapshot = Object.keys(larg).map(function(w) {
-          return { largura: w + 'cm', antes: largAnt[w] || null, depois: larg[w] };
-        });
+        var pct         = pctCount > 0 ? +(pctTotal / pctCount).toFixed(2) : 0;
+        var sampleAntes = largAnt['60'] != null ? largAnt['60']
+                        : largAnt[Object.keys(largAnt)[0]] || null;
 
         var histEntry = {
-          id:          Date.now().toString() + '-' + ei,
-          produto:     prodLabel,
-          canal:       e.channel,
-          linha:       e.desc,
-          porcentagem: pct,
-          motivo:      'Edição manual de tabela — ' + e.colecao + ' / ' + e.grupo,
-          dataHora:    ts,
-          precosAntes: largAnt,
-          sampleAntes: sampleAntes,
+          id:             Date.now().toString() + '-' + ei,
+          produto:        prodLabel,
+          canal:          e.channel,
+          linha:          e.desc,
+          porcentagem:    pct,
+          motivo:         'Edição manual — ' + e.colecao + ' / ' + e.grupo,
+          dataHora:       ts,
+          precosAntes:    largAnt,
+          sampleAntes:    sampleAntes,
           linhasSnapshot: snapshot,
         };
 
-        // Salvar em memória + Supabase
         var d = rjLoad();
         d.historico.push(histEntry);
         rjSave(d);
