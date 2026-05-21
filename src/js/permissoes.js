@@ -1,4 +1,5 @@
 // ── PERMISSÕES UI ────────────────────────────────────────────────────────────
+if (typeof DEMO_MODE === 'undefined') var DEMO_MODE = false;
 
 const PERM_LABELS = {
   ver_tabelas:              'Ver tabelas de preços',

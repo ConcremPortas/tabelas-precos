@@ -1,4 +1,5 @@
 // ── GERENCIAR TABELAS ─────────────────────────────────────────────────────────
+if (typeof DEMO_MODE === 'undefined') var DEMO_MODE = false;
 if (typeof onAfterRender === 'undefined') window.onAfterRender = function(){};
 
 // ── STATE ─────────────────────────────────────────────────────────────────────

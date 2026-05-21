@@ -223,6 +223,103 @@ window.navigate = function(btn) {
   _origNavigate(btn);
 };
 
+// ── RENDER DA TELA DE USUÁRIOS ────────────────────────────
+
+function renderUsuarios() {
+  if (!window.currentUser || window.currentUser.nivel !== 'administrador') {
+    return '<div class="empty-state"><div class="empty-icon">🔒</div><p class="empty-text">Acesso restrito a administradores.</p></div>';
+  }
+  return `
+    <div class="page-header">
+      <div class="page-title">Gerenciamento de Usuários</div>
+      <div class="page-meta"><span class="meta-pill">Administração do sistema</span></div>
+    </div>
+    <div class="usuarios-toolbar">
+      <button class="btn-novo-usuario" onclick="abrirModalNovoUsuario()">+ Novo Usuário</button>
+    </div>
+    <div class="table-card">
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>Nome</th><th>E-mail</th><th>Nível</th><th>Status</th><th>Criado em</th><th>Ações</th>
+          </tr></thead>
+          <tbody id="usuarios-tbody">
+            <tr><td colspan="6" style="text-align:center;padding:32px;color:#718096">Carregando…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div id="modal-novo-usuario" class="auth-modal-overlay" style="display:none">
+      <div class="auth-modal">
+        <div class="auth-modal-header">
+          <span>Novo Usuário</span>
+          <button class="auth-modal-close" onclick="fecharModal('modal-novo-usuario')">✕</button>
+        </div>
+        <div class="auth-modal-body">
+          <label class="form-label">Nome completo<input id="novo-nome" type="text" class="form-input" placeholder="Nome completo"></label>
+          <label class="form-label">E-mail<input id="novo-email" type="email" class="form-input" placeholder="email@concrem.com.br"></label>
+          <label class="form-label">Nível de acesso
+            <select id="novo-nivel" class="form-input">
+              <option value="vendedor">Vendedor</option>
+              <option value="gerente">Gerente</option>
+              <option value="administrador">Administrador</option>
+            </select>
+          </label>
+          <label class="form-label">Senha provisória<input id="novo-senha" type="password" class="form-input" placeholder="Mínimo 6 caracteres"></label>
+          <p id="novo-usuario-erro" class="form-error"></p>
+        </div>
+        <div class="auth-modal-footer">
+          <button class="btn-cancelar" onclick="fecharModal('modal-novo-usuario')">Cancelar</button>
+          <button class="btn-salvar" onclick="salvarNovoUsuario()">Salvar</button>
+        </div>
+      </div>
+    </div>
+    <div id="modal-editar-usuario" class="auth-modal-overlay" style="display:none">
+      <div class="auth-modal">
+        <div class="auth-modal-header">
+          <span>Editar Usuário</span>
+          <button class="auth-modal-close" onclick="fecharModal('modal-editar-usuario')">✕</button>
+        </div>
+        <div class="auth-modal-body">
+          <input type="hidden" id="editar-id">
+          <label class="form-label">Nome completo<input id="editar-nome" type="text" class="form-input"></label>
+          <label class="form-label">Nível de acesso
+            <select id="editar-nivel" class="form-input">
+              <option value="vendedor">Vendedor</option>
+              <option value="gerente">Gerente</option>
+              <option value="administrador">Administrador</option>
+            </select>
+          </label>
+          <p id="editar-usuario-erro" class="form-error"></p>
+        </div>
+        <div class="auth-modal-footer">
+          <button class="btn-cancelar" onclick="fecharModal('modal-editar-usuario')">Cancelar</button>
+          <button class="btn-salvar" onclick="salvarEdicaoUsuario()">Salvar alterações</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+function abrirModalNovoUsuario() {
+  ['novo-nome','novo-email','novo-senha'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  const nivel = document.getElementById('novo-nivel');
+  if (nivel) nivel.value = 'vendedor';
+  const err = document.getElementById('novo-usuario-erro');
+  if (err) err.textContent = '';
+  document.getElementById('modal-novo-usuario').style.display = 'flex';
+}
+
+// Carregar tabela ao navegar para a seção
+(function() {
+  const _prevAfterRender = typeof window.onAfterRender === 'function' ? window.onAfterRender : null;
+  window.onAfterRender = function(section) {
+    if (_prevAfterRender) _prevAfterRender(section);
+    if (section === 'usuarios') carregarTabelaUsuarios();
+  };
+})();
+
 // ── HELPERS GLOBAIS ───────────────────────────────────────
 
 function _esc(s) {
