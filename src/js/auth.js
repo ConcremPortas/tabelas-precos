@@ -35,7 +35,9 @@ const PERMISSOES_PADRAO = {
 };
 window.permissoes = {};
 
-const _sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const _sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: { detectSessionInUrl: false },
+});
 
 // ── ESTADO GLOBAL DO USUÁRIO ─────────────────────────────────────────────────
 let currentUser = null; // { id, nome, email, nivel }
