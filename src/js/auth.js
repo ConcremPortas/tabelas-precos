@@ -120,7 +120,7 @@ async function iniciarApp(userId) {
     .from('concremtp_usuarios')
     .select('*')
     .eq('id', userId)
-    .single();
+    .maybeSingle();
 
   if (error || !perfil) {
     mostrarErro('Usuário não encontrado. Contate o administrador.');
