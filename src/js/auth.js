@@ -394,6 +394,24 @@ async function toggleAtivo(id, ativo) {
   carregarTabelaUsuarios();
 }
 
+function _traduzErroAuth(msg) {
+  if (!msg) return 'Erro desconhecido.';
+  const m = msg.toLowerCase();
+  if (m.includes('password should be at least'))      return 'A senha deve ter no mínimo 8 caracteres.';
+  if (m.includes('weak') || m.includes('easy to guess')) return 'Senha muito fraca. Use letras, números e símbolos.';
+  if (m.includes('already registered') || m.includes('already been registered')) return 'Este e-mail já está cadastrado.';
+  if (m.includes('user already exists'))              return 'Este e-mail já está cadastrado.';
+  if (m.includes('invalid email'))                    return 'E-mail inválido.';
+  if (m.includes('unable to validate email'))         return 'E-mail inválido ou não permitido.';
+  if (m.includes('signup is disabled'))               return 'Cadastro desabilitado. Contate o administrador.';
+  if (m.includes('email not confirmed'))              return 'E-mail não confirmado. Verifique sua caixa de entrada.';
+  if (m.includes('invalid login credentials'))        return 'E-mail ou senha incorretos.';
+  if (m.includes('too many requests'))                return 'Muitas tentativas. Aguarde alguns minutos e tente novamente.';
+  if (m.includes('network') || m.includes('fetch'))  return 'Erro de conexão. Verifique sua internet.';
+  if (m.includes('duplicate key') || m.includes('unique'))  return 'Este e-mail já está cadastrado no sistema.';
+  return msg; // fallback: retorna original se não mapeado
+}
+
 async function salvarNovoUsuario() {
   const nome  = document.getElementById('novo-nome')?.value.trim();
   const email = document.getElementById('novo-email')?.value.trim();
@@ -414,7 +432,10 @@ async function salvarNovoUsuario() {
     email, password: senha, options: { data: { nome, nivel } }
   });
 
-  if (authErr) { if (errEl) errEl.textContent = authErr.message; return; }
+  if (authErr) {
+    if (errEl) errEl.textContent = _traduzErroAuth(authErr.message);
+    return;
+  }
 
   const userId = authData.user?.id;
   if (!userId) {
@@ -426,7 +447,7 @@ async function salvarNovoUsuario() {
     .insert({ id: userId, nome, email, nivel, ativo: true,
               criado_por: window.currentUser?.id });
 
-  if (dbErr) { if (errEl) errEl.textContent = dbErr.message; return; }
+  if (dbErr) { if (errEl) errEl.textContent = _traduzErroAuth(dbErr.message); return; }
 
   fecharModal('modal-novo-usuario');
   alert(`Usuário criado!\nE-mail: ${email}\nSenha: ${senha}`);
@@ -493,7 +514,7 @@ async function salvarNovaSenha() {
   // Usuário alterando a própria senha
   if (userId === window.currentUser?.id) {
     const { error } = await _sb.auth.updateUser({ password: nova });
-    if (error) { errEl.style.color = '#dc2626'; errEl.textContent = error.message; return; }
+    if (error) { errEl.style.color = '#dc2626'; errEl.textContent = _traduzErroAuth(error.message); return; }
     fecharModal('modal-alterar-senha');
     alert('Senha alterada com sucesso!');
     return;
