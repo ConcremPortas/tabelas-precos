@@ -353,10 +353,10 @@ async function carregarTabelaUsuarios() {
         ? '<span class="badge-ativo">Ativo</span>'
         : '<span class="badge-inativo">Inativo</span>'}</td>
       <td>${new Date(u.criado_em).toLocaleDateString('pt-BR')}</td>
-      <td>
-        <button onclick="abrirModalEditar('${u.id}')" class="btn-acao">Editar</button>
+      <td class="acoes-cell">
+        <button onclick="abrirModalEditar('${u.id}')" class="btn-editar-usr">Editar</button>
         ${u.id !== window.currentUser?.id ? `
-        <button onclick="toggleAtivo('${u.id}',${u.ativo})" class="btn-acao btn-acao-danger">
+        <button onclick="toggleAtivo('${u.id}',${u.ativo})" class="btn-desativar-usr">
           ${u.ativo ? 'Desativar' : 'Ativar'}
         </button>` : ''}
       </td>
