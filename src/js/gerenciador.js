@@ -998,7 +998,20 @@ async function gmExecuteSave() {
     _gmToast('Tabela atualizada com sucesso!');
 
   } catch(e) {
-    _gmToast('Erro ao salvar: ' + (e.message || String(e)), true);
+    var msg = e.message || String(e);
+    var detalhe = msg.includes('403') || msg.includes('Forbidden')
+      ? 'Sem permissão de escrita (403). Execute o SQL de liberação de RLS no Supabase.'
+      : msg;
+    console.error('[gerenciador] Erro ao salvar:', e);
+    // Mostrar erro em modal persistente (não some como toast)
+    var errModal = document.createElement('div');
+    errModal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:center;justify-content:center';
+    errModal.innerHTML = '<div style="background:#fff;border-radius:12px;padding:28px 32px;max-width:480px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.3)">'
+      + '<p style="font-weight:700;font-size:16px;color:#dc2626;margin-bottom:8px">❌ Erro ao salvar</p>'
+      + '<p style="font-size:13px;color:#374151;margin-bottom:20px">' + detalhe + '</p>'
+      + '<button onclick="this.closest(\'div[style]\').remove()" style="background:#dc2626;color:#fff;border:none;border-radius:8px;padding:9px 20px;cursor:pointer;font-weight:600">Fechar</button>'
+      + '</div>';
+    document.body.appendChild(errModal);
   }
 }
 
