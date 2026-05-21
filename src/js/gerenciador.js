@@ -1,5 +1,7 @@
 // ── GERENCIADOR DE ITENS DAS TABELAS ─────────────────────────────────────────
 // Adicionar, editar e remover linhas/colunas. Acesso via temPermissao().
+if (typeof DEMO_MODE === 'undefined') var DEMO_MODE = false;
+if (typeof onAfterRender === 'undefined') window.onAfterRender = function(){};
 
 // ── STATE ─────────────────────────────────────────────────────────────────────
 var _gmDbItems   = [];

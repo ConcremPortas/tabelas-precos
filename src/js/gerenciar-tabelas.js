@@ -1,4 +1,5 @@
 // ── GERENCIAR TABELAS ─────────────────────────────────────────────────────────
+if (typeof onAfterRender === 'undefined') window.onAfterRender = function(){};
 
 // ── STATE ─────────────────────────────────────────────────────────────────────
 let _gtGrupos      = [];
