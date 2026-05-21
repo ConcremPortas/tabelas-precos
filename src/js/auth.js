@@ -444,8 +444,7 @@ async function salvarNovoUsuario() {
   }
 
   const { error: dbErr } = await _sb.from('concremtp_usuarios')
-    .insert({ id: userId, nome, email, nivel, ativo: true,
-              criado_por: window.currentUser?.id });
+    .insert({ id: userId, nome, email, nivel, ativo: true });
 
   if (dbErr) { if (errEl) errEl.textContent = _traduzErroAuth(dbErr.message); return; }
 
