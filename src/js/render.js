@@ -510,10 +510,24 @@ function navRestore() {
 }
 
 function navigate(btn) {
+  const newSection = btn.dataset.section;
+  const newTab     = btn.dataset.tab || null;
+
+  // Evita re-render se a seção e a aba já estão ativas (sem troca real)
+  const isSameSection = newSection === currentSection;
+  const isSameTab     = !newTab || newTab === (subTabState[newSection] || '');
+  if (isSameSection && isSameTab) {
+    // Apenas garante visual do botão ativo sem re-renderizar
+    document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    if (window.innerWidth <= 768) closeSidebar();
+    return;
+  }
+
   document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  currentSection = btn.dataset.section;
-  if (btn.dataset.tab) subTabState[currentSection] = btn.dataset.tab;
+  currentSection = newSection;
+  if (newTab) subTabState[currentSection] = newTab;
   searchTerm = '';
   const si = document.getElementById('search-input');
   if (si) si.value = '';

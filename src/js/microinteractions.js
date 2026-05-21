@@ -42,8 +42,15 @@
   };
 
   // ── 3. AFTER-RENDER HOOK ───────────────────────────────────────────────────
-  // render.js calls: if (typeof onAfterRender === 'function') onAfterRender(section)
+  // Encadeia sobre o onAfterRender já definido pelos scripts anteriores
+  // (auth.js / gerenciar-tabelas.js podem ter definido o seu próprio hook).
+  var _miPrevAfterRender = typeof onAfterRender === 'function' ? onAfterRender : null;
   window.onAfterRender = function(section) {
+
+    // Chama hooks anteriores da cadeia primeiro
+    if (_miPrevAfterRender) {
+      try { _miPrevAfterRender(section); } catch(e) { console.error('[microinteractions] erro em hook anterior:', e); }
+    }
 
     // Price flash on channel change
     if (_miChannelChanged) {

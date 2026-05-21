@@ -305,6 +305,18 @@
   .nav-item:hover .nav-icon { color: rgba(255,255,255,0.70); }
   .nav-item.active .nav-icon { color: #4ade80; }
 
+  /* ── Tabler Icons — global (garante que qualquer .ti renderize com a fonte correta) ── */
+  i.ti,
+  .ti[class*="ti-"] {
+    font-family: 'tabler-icons' !important;
+    font-style: normal !important;
+    font-weight: normal !important;
+    line-height: 1 !important;
+    display: inline-block !important;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
   /* ── Tabler Icons — sidebar ── */
   .nav-item i,
   .nav-item .ti {

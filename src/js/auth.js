@@ -131,11 +131,18 @@ window.navigate = function(btn) {
 };
 
 // ── LOGIN SCREEN ──────────────────────────────────────────────────────────────
+let _loginSafetyTimer = null; // timer de segurança do formulário de login
+
 function mostrarLogin() {
   document.getElementById('login-screen').style.display = 'flex';
+  // Garante que o botão de login esteja habilitado ao mostrar a tela
+  const btn = document.getElementById('login-btn');
+  if (btn) { btn.disabled = false; btn.innerHTML = 'Entrar →'; }
 }
 function ocultarLogin() {
   document.getElementById('login-screen').style.display = 'none';
+  // Cancela timer de segurança — login foi bem sucedido
+  if (_loginSafetyTimer) { clearTimeout(_loginSafetyTimer); _loginSafetyTimer = null; }
 }
 function mostrarErroLogin(msg, cor) {
   const el = document.getElementById('login-error');
@@ -143,6 +150,18 @@ function mostrarErroLogin(msg, cor) {
   el.style.color = cor || '#dc2626';
   el.textContent = msg;
 }
+
+// ── VALIDAÇÃO DAS ENV VARS (falha imediata e visível se não injetadas) ───────
+(function _checkEnv() {
+  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+    console.error('[auth] SUPABASE_URL ou SUPABASE_ANON_KEY não definidos.',
+      'URL:', SUPABASE_URL || '(vazio)',
+      'KEY:', SUPABASE_ANON_KEY ? '(presente)' : '(vazio)');
+    mostrarErroLogin('Configuração de servidor ausente. Contacte o administrador.');
+  } else {
+    console.log('[auth] Supabase configurado. URL:', SUPABASE_URL.substring(0, 30) + '…');
+  }
+})();
 
 // ── SIDEBAR — DADOS DO USUÁRIO ────────────────────────────────────────────────
 function atualizarSidebarUsuario(user) {
@@ -163,45 +182,83 @@ function atualizarSidebarUsuario(user) {
 
 // ── BUSCAR PERFIL DO USUÁRIO ──────────────────────────────────────────────────
 async function buscarPerfil(userId) {
+  console.log('[auth] buscarPerfil — userId:', userId);
   try {
     const result = await Promise.race([
       _sb.from('concremtp_usuarios').select('id, nome, email, nivel, ativo').eq('id', userId).single(),
       new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 8000)),
     ]);
-    if (result.error || !result.data) return null;
+    if (result.error) {
+      console.error('[auth] buscarPerfil — erro Supabase:', result.error);
+      return null;
+    }
+    if (!result.data) {
+      console.warn('[auth] buscarPerfil — nenhum registro encontrado para userId:', userId,
+        '. Verifique se o usuário existe na tabela concremtp_usuarios com o mesmo id do Auth.');
+      return null;
+    }
+    console.log('[auth] buscarPerfil — perfil encontrado:', result.data.nome, '|', result.data.nivel);
     return result.data;
-  } catch {
+  } catch (err) {
+    console.error('[auth] buscarPerfil — exceção:', err && err.message || err);
     return null;
   }
 }
 
 // ── ESTADO DE AUTENTICAÇÃO ────────────────────────────────────────────────────
 async function _loginSucesso(perfil) {
+  console.log('[auth] _loginSucesso — iniciando para:', perfil.nome, '|', perfil.nivel);
   currentUser = { id: perfil.id, nome: perfil.nome, email: perfil.email, nivel: perfil.nivel };
+  console.log('[auth] _loginSucesso — carregando permissões…');
   await carregarPermissoes(currentUser.nivel, currentUser.id);
+  console.log('[auth] _loginSucesso — permissões carregadas. Inicializando reajustes…');
   if (typeof rjInitFromSupabase === 'function') await rjInitFromSupabase();
+  console.log('[auth] _loginSucesso — reajustes prontos. Abrindo app…');
   ocultarLogin();
   atualizarSidebarUsuario(currentUser);
   aplicarNivel(currentUser.nivel);
   aplicarPermissoes();
   initApp();
+  console.log('[auth] _loginSucesso — app inicializado.');
 }
 
 // Inicializa sessão via Supabase
 {
   let _loginInProgress = false;
   _sb.auth.onAuthStateChange(async (event, session) => {
+    console.log('[auth] onAuthStateChange — event:', event, '| session:', session ? 'presente' : 'nula');
+
     // TOKEN_REFRESHED e USER_UPDATED não devem reinicializar o app
-    if (event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') return;
+    if (event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {
+      console.log('[auth] onAuthStateChange — ignorado (evento de refresh/update).');
+      return;
+    }
 
     if (session?.user) {
       // Já autenticado ou login em andamento — ignorar disparo duplo
-      if (currentUser || _loginInProgress) return;
+      if (currentUser) {
+        console.log('[auth] onAuthStateChange — ignorado (currentUser já definido).');
+        return;
+      }
+      if (_loginInProgress) {
+        console.log('[auth] onAuthStateChange — ignorado (login já em progresso).');
+        return;
+      }
       _loginInProgress = true;
+      console.log('[auth] onAuthStateChange — iniciando login para userId:', session.user.id);
 
       try {
         const perfil = await buscarPerfil(session.user.id);
-        if (!perfil || !perfil.ativo) {
+        if (!perfil) {
+          console.error('[auth] onAuthStateChange — buscarPerfil retornou null.',
+            'Verifique se o usuário existe na tabela concremtp_usuarios com id =', session.user.id);
+          await _sb.auth.signOut();
+          mostrarLogin();
+          mostrarErroLogin('Usuário não encontrado no sistema. Contate o administrador.');
+          return;
+        }
+        if (!perfil.ativo) {
+          console.warn('[auth] onAuthStateChange — usuário inativo:', perfil.nome);
           await _sb.auth.signOut();
           mostrarLogin();
           mostrarErroLogin('Conta inativa. Contate o administrador.');
@@ -209,12 +266,14 @@ async function _loginSucesso(perfil) {
         }
         await _loginSucesso(perfil);
       } catch (err) {
+        console.error('[auth] onAuthStateChange — exceção durante login:', err && err.message || err, err);
         mostrarLogin();
         mostrarErroLogin('Erro ao inicializar: ' + (err && err.message || err));
       } finally {
         _loginInProgress = false;
       }
     } else {
+      console.log('[auth] onAuthStateChange — sem sessão → mostrar tela de login.');
       _loginInProgress = false;
       mostrarLogin();
       currentUser = null;
@@ -229,23 +288,56 @@ document.getElementById('login-form').addEventListener('submit', async e => {
   const password = document.getElementById('login-password').value;
   const btn      = document.getElementById('login-btn');
 
+  // Validação precoce das env vars
+  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+    mostrarErroLogin('Configuração de servidor ausente. Contacte o administrador.');
+    console.error('[auth] Login bloqueado: SUPABASE_URL ou SUPABASE_ANON_KEY não definidos.');
+    return;
+  }
+
   btn.disabled = true;
   btn.innerHTML = '<span class="login-spinner"></span> Entrando…';
   mostrarErroLogin('');
+
+  console.log('[auth] signInWithPassword — email:', email);
 
   try {
     const authResult = await Promise.race([
       _sb.auth.signInWithPassword({ email, password }),
       new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 10000)),
     ]);
-    if (authResult.error) mostrarErroLogin('E-mail ou senha incorretos.');
-  } catch (e) {
+
+    if (authResult.error) {
+      console.error('[auth] signInWithPassword — erro:', authResult.error.message, authResult.error);
+      // O onAuthStateChange não vai disparar em caso de erro — reabilitar botão aqui
+      mostrarErroLogin('E-mail ou senha incorretos.');
+      btn.disabled = false;
+      btn.innerHTML = 'Entrar →';
+      return;
+    }
+
+    console.log('[auth] signInWithPassword — sucesso. Aguardando onAuthStateChange…');
+    // Sucesso: onAuthStateChange irá chamar _loginSucesso e depois initApp.
+    // O botão permanece desabilitado até o app carregar (ocultarLogin cancela o timer abaixo).
+    // Timeout de segurança: se onAuthStateChange não disparar em 12s, reabilita o botão.
+    if (_loginSafetyTimer) clearTimeout(_loginSafetyTimer);
+    _loginSafetyTimer = setTimeout(() => {
+      _loginSafetyTimer = null;
+      if (!currentUser) {
+        console.warn('[auth] Timeout de segurança: onAuthStateChange não disparou em 12s após signIn.');
+        mostrarErroLogin('Tempo limite excedido ao carregar o perfil. Verifique sua conexão e tente novamente.');
+        btn.disabled = false;
+        btn.innerHTML = 'Entrar →';
+      }
+    }, 12000);
+
+  } catch (err) {
+    console.error('[auth] signInWithPassword — exceção:', err && err.message || err);
     mostrarErroLogin(
-      e.message === 'timeout'
+      err.message === 'timeout'
         ? 'Tempo limite excedido. Verifique sua conexão.'
-        : 'Erro de conexão. Tente novamente.'
+        : 'Erro de conexão: ' + (err.message || 'Tente novamente.')
     );
-  } finally {
     btn.disabled = false;
     btn.innerHTML = 'Entrar →';
   }
@@ -499,10 +591,34 @@ async function salvarNovoUsuario() {
     options: { data: { nome, nivel } }
   });
 
-  if (authErr) { errEl.style.color = '#dc2626'; errEl.textContent = authErr.message; return; }
+  if (authErr) {
+    errEl.style.color = '#dc2626';
+    // Mensagens de erro mais claras por tipo
+    if (authErr.message && authErr.message.toLowerCase().includes('already registered')) {
+      errEl.textContent = 'Este e-mail já está cadastrado no sistema de autenticação.';
+    } else if (authErr.message && authErr.message.toLowerCase().includes('invalid email')) {
+      errEl.textContent = 'E-mail inválido.';
+    } else if (authErr.message && authErr.message.toLowerCase().includes('weak password')) {
+      errEl.textContent = 'Senha muito fraca. Use ao menos 6 caracteres.';
+    } else {
+      errEl.textContent = 'Erro ao criar conta: ' + authErr.message;
+    }
+    console.error('[auth] salvarNovoUsuario — signUp error:', authErr);
+    return;
+  }
 
   const userId = authData.user?.id;
-  if (!userId) { errEl.style.color = '#dc2626'; errEl.textContent = 'Erro: usuário não criado.'; return; }
+  if (!userId) {
+    errEl.style.color = '#dc2626';
+    // Pode ocorrer quando "Email Confirmation" está habilitado no Supabase Dashboard
+    if (authData.user === null && authData.session === null) {
+      errEl.textContent = 'Confirmação de e-mail pendente. Desative "Email Confirmation" no Supabase Dashboard para criar usuários sem confirmação.';
+    } else {
+      errEl.textContent = 'Erro: usuário não criado (id ausente). Verifique as configurações do Supabase Auth.';
+    }
+    console.error('[auth] salvarNovoUsuario — userId ausente. authData:', authData);
+    return;
+  }
 
   // Insere na tabela usuarios
   const { error: dbErr } = await _sb.from('concremtp_usuarios').insert({
