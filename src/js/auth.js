@@ -72,8 +72,8 @@ async function carregarPermissoes(nivel, userId) {
     const timeout = new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 8000));
     const [perfRes, usrRes] = await Promise.race([
       Promise.all([
-        _sb.from('concremtp_permissoes_perfil').select('permissoes').eq('perfil', nivel).single(),
-        _sb.from('concremtp_permissoes_usuario').select('permissoes_override').eq('usuario_id', userId).single(),
+        _sb.from('concremtp_permissoes_perfil').select('permissoes').eq('perfil', nivel).maybeSingle(),
+        _sb.from('concremtp_permissoes_usuario').select('permissoes_override').eq('usuario_id', userId).maybeSingle(),
       ]),
       timeout,
     ]);
