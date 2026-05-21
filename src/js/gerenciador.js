@@ -814,6 +814,7 @@ function _gmCollectChanges() {
       var thead = row.closest('table').querySelector('thead tr');
       var thArr  = thead ? Array.from(thead.querySelectorAll('th')).slice(1) : [];
       var larguras = {};
+      var larguras_antes = {};
       var normalInputs = Array.from(row.querySelectorAll('.gm-price-input:not(.gm-nc-input)'));
       normalInputs.forEach(function(inp, i) {
         var th = thArr[i];
@@ -821,8 +822,10 @@ function _gmCollectChanges() {
         var wStr = th.textContent.replace(' cm','').trim();
         var w = parseInt(wStr);
         if (!isNaN(w)) {
-          var v = parseFloat(inp.value);
-          if (!isNaN(v)) larguras[String(w)] = hasMult ? +(v/mult).toFixed(4) : v;
+          var v    = parseFloat(inp.value);
+          var vOld = parseFloat(inp.dataset.orig || inp.value);
+          if (!isNaN(v))    larguras[String(w)]       = hasMult ? +(v/mult).toFixed(4) : v;
+          if (!isNaN(vOld)) larguras_antes[String(w)] = hasMult ? +(vOld/mult).toFixed(4) : vOld;
         }
       });
       // New columns
@@ -831,7 +834,10 @@ function _gmCollectChanges() {
         if (inp.dataset.colW && !isNaN(v) && v > 0)
           larguras[inp.dataset.colW] = hasMult ? +(v/mult).toFixed(4) : v;
       });
-      if (Object.keys(larguras).length) changes.larguras = larguras;
+      if (Object.keys(larguras).length) {
+        changes.larguras       = larguras;
+        changes.larguras_antes = larguras_antes;
+      }
     } else if (tt === 'protect') {
       var inps = row.querySelectorAll('.gm-price-input');
       if (inps[0]) changes.preco_venda   = +(parseFloat(inps[0].value) / (hasMult ? mult : 1)).toFixed(4);
@@ -999,6 +1005,65 @@ async function gmExecuteSave() {
       await _sb.from('concremtp_audit_tabelas').insert(auditEntry);
     } catch(auditErr) {
       console.warn('[gerenciador] audit log falhou (não crítico):', auditErr.message);
+    }
+
+    // ── Registrar no Histórico de Reajustes ───────────────
+    try {
+      var PROD_LABEL = {
+        portasLacca: 'Portas LACCA', portasUV: 'Portas UV Melamínico',
+        portasELO: 'Portas ELO', laccaAcab: 'Batente & Alizar LACCA',
+        melamAcab: 'Batente & Alizar Melamínico', batenteELO: 'Batente & Alizar ELO',
+      };
+      var prodLabel = PROD_LABEL[_gmEditSection] || _gmEditSection;
+
+      for (var ei = 0; ei < payload.edited.length; ei++) {
+        var e = payload.edited[ei];
+        if (e.tipo !== 'porta' || !e.changes.larguras) continue;
+
+        var larg    = e.changes.larguras;
+        var largAnt = e.changes.larguras_antes || {};
+
+        // Calcular percentual médio de mudança (usando todas as larguras disponíveis)
+        var pctTotal = 0; var pctCount = 0;
+        Object.keys(larg).forEach(function(w) {
+          var novo  = larg[w];
+          var antes = largAnt[w];
+          if (antes && antes > 0 && novo != null) {
+            pctTotal += ((novo - antes) / antes) * 100;
+            pctCount++;
+          }
+        });
+        var pct = pctCount > 0 ? +(pctTotal / pctCount).toFixed(2) : 0;
+
+        // Preço amostra (60cm, ou primeiro disponível)
+        var sampleAntes = largAnt['60'] || largAnt[Object.keys(largAnt)[0]] || null;
+
+        // Snapshot linha a linha
+        var snapshot = Object.keys(larg).map(function(w) {
+          return { largura: w + 'cm', antes: largAnt[w] || null, depois: larg[w] };
+        });
+
+        var histEntry = {
+          id:          Date.now().toString() + '-' + ei,
+          produto:     prodLabel,
+          canal:       e.channel,
+          linha:       e.desc,
+          porcentagem: pct,
+          motivo:      'Edição manual de tabela — ' + e.colecao + ' / ' + e.grupo,
+          dataHora:    ts,
+          precosAntes: largAnt,
+          sampleAntes: sampleAntes,
+          linhasSnapshot: snapshot,
+        };
+
+        // Salvar em memória + Supabase
+        var d = rjLoad();
+        d.historico.push(histEntry);
+        rjSave(d);
+        if (typeof _rjSbInsertReajuste === 'function') _rjSbInsertReajuste(histEntry);
+      }
+    } catch(histErr) {
+      console.warn('[gerenciador] histórico de reajustes falhou (não crítico):', histErr.message);
     }
 
     var res = await _sb.from('concremtp_itens_tabela').select('*').eq('ativo', true);
