@@ -297,6 +297,30 @@ function renderUsuarios() {
           <button class="btn-salvar" onclick="salvarEdicaoUsuario()">Salvar alterações</button>
         </div>
       </div>
+    </div>
+    <div id="modal-alterar-senha" class="auth-modal-overlay" style="display:none">
+      <div class="auth-modal">
+        <div class="auth-modal-header">
+          <span>Alterar Senha</span>
+          <button class="auth-modal-close" onclick="fecharModal('modal-alterar-senha')">✕</button>
+        </div>
+        <div class="auth-modal-body">
+          <input type="hidden" id="senha-usuario-id">
+          <input type="hidden" id="senha-usuario-email">
+          <p id="senha-usuario-info" style="margin-bottom:14px;font-size:13px;color:#6b7280"></p>
+          <label class="form-label">Nova senha
+            <input id="nova-senha" type="password" class="form-input" placeholder="Mínimo 6 caracteres">
+          </label>
+          <label class="form-label">Confirmar senha
+            <input id="confirmar-senha" type="password" class="form-input" placeholder="Repita a nova senha">
+          </label>
+          <p id="senha-erro" class="form-error"></p>
+        </div>
+        <div class="auth-modal-footer">
+          <button class="btn-cancelar" onclick="fecharModal('modal-alterar-senha')">Cancelar</button>
+          <button class="btn-salvar" onclick="salvarNovaSenha()">Salvar senha</button>
+        </div>
+      </div>
     </div>`;
 }
 
@@ -355,6 +379,7 @@ async function carregarTabelaUsuarios() {
       <td>${new Date(u.criado_em).toLocaleDateString('pt-BR')}</td>
       <td class="acoes-cell">
         <button onclick="abrirModalEditar('${u.id}')" class="btn-editar-usr">Editar</button>
+        <button onclick="abrirModalSenha('${u.id}','${_esc(u.email)}')" class="btn-editar-usr">Senha</button>
         ${u.id !== window.currentUser?.id ? `
         <button onclick="toggleAtivo('${u.id}',${u.ativo})" class="btn-desativar-usr">
           ${u.ativo ? 'Desativar' : 'Ativar'}
@@ -436,4 +461,47 @@ async function salvarEdicaoUsuario() {
     atualizarSidebar(window.currentUser);
     aplicarAcesso(nivel);
   }
+}
+
+function abrirModalSenha(userId, email) {
+  document.getElementById('senha-usuario-id').value    = userId;
+  document.getElementById('senha-usuario-email').value = email;
+  document.getElementById('senha-usuario-info').textContent =
+    userId === window.currentUser?.id
+      ? `Alterando sua própria senha (${email})`
+      : `Usuário: ${email}`;
+  document.getElementById('nova-senha').value      = '';
+  document.getElementById('confirmar-senha').value = '';
+  document.getElementById('senha-erro').textContent = '';
+  document.getElementById('modal-alterar-senha').style.display = 'flex';
+}
+
+async function salvarNovaSenha() {
+  const userId = document.getElementById('senha-usuario-id').value;
+  const email  = document.getElementById('senha-usuario-email').value;
+  const nova   = document.getElementById('nova-senha').value;
+  const conf   = document.getElementById('confirmar-senha').value;
+  const errEl  = document.getElementById('senha-erro');
+
+  if (!nova)          { errEl.textContent = 'Digite a nova senha.'; return; }
+  if (nova.length < 6){ errEl.textContent = 'Senha mínima: 6 caracteres.'; return; }
+  if (nova !== conf)  { errEl.textContent = 'As senhas não coincidem.'; return; }
+
+  errEl.style.color = '#718096';
+  errEl.textContent = 'Salvando…';
+
+  // Usuário alterando a própria senha
+  if (userId === window.currentUser?.id) {
+    const { error } = await _sb.auth.updateUser({ password: nova });
+    if (error) { errEl.style.color = '#dc2626'; errEl.textContent = error.message; return; }
+    fecharModal('modal-alterar-senha');
+    alert('Senha alterada com sucesso!');
+    return;
+  }
+
+  // Admin alterando senha de outro usuário — envia e-mail de reset
+  const { error } = await _sb.auth.resetPasswordForEmail(email);
+  if (error) { errEl.style.color = '#dc2626'; errEl.textContent = error.message; return; }
+  fecharModal('modal-alterar-senha');
+  alert(`E-mail de redefinição de senha enviado para ${email}.\n\nO usuário receberá um link para criar uma nova senha.`);
 }
