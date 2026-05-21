@@ -59,6 +59,7 @@ function _gmApplyItem(it) {
 
 function _gmApplyPortaItem(sectionData, it) {
   var ch = sectionData[it.canal];
+  console.log('[gm] applyPortaItem — canal:', it.canal, 'ch definido:', !!ch, 'larguras:', JSON.stringify(it.larguras));
   if (!ch) return;
   if (it.tipo === 'porta' && ch.colecoes && it.larguras) {
     var col = ch.colecoes.find(function(c) { return c.nome === it.colecao; });
@@ -384,13 +385,22 @@ function _gmTransformRow(row) {
   if (!temPermissao('editar_itens_tabela')) return;
 
   if (tt === 'porta') {
+    // Ler larguras do cabeçalho para marcar cada input com data-col-w
+    var thead = row.closest('table') && row.closest('table').querySelector('thead tr');
+    var thArr  = thead ? Array.from(thead.querySelectorAll('th')) : [];
     for (var i = 1; i < tds.length; i++) {
       var td = tds[i];
       if (td.classList.contains('dash') || td.textContent.trim() === '—' ||
           td.querySelector('.gm-btn-del')) continue;
       var v = _gmParsePrice(td.textContent);
+      // Extrair número da largura do <th> correspondente (ex: "60 CM" → "60")
+      var colWAttr = '';
+      if (thArr[i]) {
+        var m = thArr[i].textContent.trim().match(/(\d+)/);
+        if (m) colWAttr = ' data-col-w="' + m[1] + '"';
+      }
       td.innerHTML = '<input type="number" class="gm-price-input" min="0" step="0.01"' +
-        ' value="' + v.toFixed(2) + '" data-orig="' + v.toFixed(2) + '">';
+        ' value="' + v.toFixed(2) + '" data-orig="' + v.toFixed(2) + '"' + colWAttr + '>';
       td.classList.add('gm-editing');
     }
   } else if (tt === 'protect') {
@@ -1029,7 +1039,7 @@ function _gmBuildDbRow(e, uid, ts) {
   }
   return {
     produto: e.section, canal: e.channel, tipo: tipo,
-    colecao: colecao, linha: e.grupo || null, acabamento: e.desc,
+    colecao: colecao, linha: e.desc || null, acabamento: e.grupo || null,
     larguras: {}, preco_venda: null, preco_protect: null, preco_regua: null, preco_ml: null,
     ativo: true, criado_por: uid || null, criado_em: ts || new Date().toISOString(),
   };
