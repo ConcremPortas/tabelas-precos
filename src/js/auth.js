@@ -35,9 +35,7 @@ const PERMISSOES_PADRAO = {
 };
 window.permissoes = {};
 
-const _sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-  auth: { storage: window.sessionStorage },
-});
+const _sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // ── ESTADO GLOBAL DO USUÁRIO ─────────────────────────────────────────────────
 let currentUser = null; // { id, nome, email, nivel }
@@ -252,6 +250,7 @@ async function _loginSucesso(perfil) {
         if (!perfil) {
           console.error('[auth] onAuthStateChange — buscarPerfil retornou null.',
             'Verifique se o usuário existe na tabela concremtp_usuarios com id =', session.user.id);
+          _loginInProgress = false; // liberar antes do signOut para não bloquear novo login simultâneo
           await _sb.auth.signOut();
           mostrarLogin();
           mostrarErroLogin('Usuário não encontrado no sistema. Contate o administrador.');
@@ -259,6 +258,7 @@ async function _loginSucesso(perfil) {
         }
         if (!perfil.ativo) {
           console.warn('[auth] onAuthStateChange — usuário inativo:', perfil.nome);
+          _loginInProgress = false;
           await _sb.auth.signOut();
           mostrarLogin();
           mostrarErroLogin('Conta inativa. Contate o administrador.');
@@ -321,10 +321,23 @@ document.getElementById('login-form').addEventListener('submit', async e => {
     // O botão permanece desabilitado até o app carregar (ocultarLogin cancela o timer abaixo).
     // Timeout de segurança: se onAuthStateChange não disparar em 12s, reabilita o botão.
     if (_loginSafetyTimer) clearTimeout(_loginSafetyTimer);
-    _loginSafetyTimer = setTimeout(() => {
+    _loginSafetyTimer = setTimeout(async () => {
       _loginSafetyTimer = null;
       if (!currentUser) {
-        console.warn('[auth] Timeout de segurança: onAuthStateChange não disparou em 12s após signIn.');
+        console.warn('[auth] Timeout de segurança: onAuthStateChange não disparou em 12s após signIn. Tentando recuperar sessão…');
+        // Tenta recuperar: pode ter havido race condition com um check anterior
+        try {
+          const { data: { session: sess } } = await _sb.auth.getSession();
+          if (sess?.user) {
+            const perfil = await buscarPerfil(sess.user.id);
+            if (perfil && perfil.ativo) {
+              await _loginSucesso(perfil);
+              return;
+            }
+          }
+        } catch (e) {
+          console.error('[auth] Recuperação de sessão falhou:', e);
+        }
         mostrarErroLogin('Tempo limite excedido ao carregar o perfil. Verifique sua conexão e tente novamente.');
         btn.disabled = false;
         btn.innerHTML = 'Entrar →';
