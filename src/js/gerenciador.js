@@ -966,6 +966,31 @@ async function gmExecuteSave() {
 
     await Promise.all(ops);
 
+    // ── Audit log ─────────────────────────────────────────
+    try {
+      var detalhes = [];
+      if (payload.added.length)   detalhes.push(payload.added.length   + ' linha(s) adicionada(s)');
+      if (payload.edited.length)  detalhes.push(payload.edited.length  + ' linha(s) editada(s)');
+      if (payload.removed.length) detalhes.push(payload.removed.length + ' linha(s) removida(s)');
+      if (_gmNewCols.length)      detalhes.push(_gmNewCols.length + ' coluna(s) adicionada(s): ' + _gmNewCols.join(', ') + ' cm');
+
+      var auditEntry = {
+        data_hora:  ts,
+        usuario_id: uid || null,
+        usuario_nome: (window.currentUser && window.currentUser.nome) || null,
+        produto:    _gmEditSection || null,
+        canal:      _gmEditChannel || null,
+        acao:       'edicao_tabela',
+        detalhes:   detalhes.join(' · '),
+        adicionados: payload.added.length,
+        editados:    payload.edited.length,
+        removidos:   payload.removed.length,
+      };
+      await _sb.from('concremtp_audit_tabelas').insert(auditEntry);
+    } catch(auditErr) {
+      console.warn('[gerenciador] audit log falhou (não crítico):', auditErr.message);
+    }
+
     var res = await _sb.from('concremtp_itens_tabela').select('*').eq('ativo', true);
     _gmDbItems = res.data || [];
     _gmEditMode = false; _gmAdded = []; _gmRemoved = new Set(); _gmNewCols = [];
