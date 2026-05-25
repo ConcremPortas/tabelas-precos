@@ -59,7 +59,6 @@ function _gmApplyItem(it) {
 
 function _gmApplyPortaItem(sectionData, it) {
   var ch = sectionData[it.canal];
-  console.log('[gm] applyPortaItem — canal:', it.canal, 'ch definido:', !!ch, 'larguras:', JSON.stringify(it.larguras));
   if (!ch) return;
   if (it.tipo === 'porta' && ch.colecoes && it.larguras) {
     var col = ch.colecoes.find(function(c) { return c.nome === it.colecao; });
