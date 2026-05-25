@@ -428,27 +428,38 @@ async function salvarNovoUsuario() {
   const errEl = document.getElementById('novo-usuario-erro');
 
   if (!nome || !email || !senha) {
-    if (errEl) errEl.textContent = 'Preencha todos os campos.'; return;
+    if (errEl) errEl.textContent = 'Preencha todos os campos.';
+    return;
   }
   if (senha.length < 6) {
-    if (errEl) errEl.textContent = 'Senha mínima: 6 caracteres.'; return;
-  }
-
-  if (errEl) { errEl.style.color = '#718096'; errEl.textContent = 'Criando…'; }
-
-  const { data, error } = await _sb.functions.invoke('criar-usuario', {
-    body: { nome, email, senha, nivel }
-  });
-
-  if (error || !data?.success) {
-    const msg = data?.error || error?.message || 'Erro ao criar usuário.';
-    if (errEl) errEl.textContent = _traduzErroAuth(msg);
+    if (errEl) errEl.textContent = 'Senha mínima: 6 caracteres.';
     return;
   }
 
-  fecharModal('modal-novo-usuario');
-  alert(`Usuário criado!\nE-mail: ${email}\nSenha: ${senha}`);
-  carregarTabelaUsuarios();
+  if (errEl) { errEl.style.color = '#718096'; errEl.textContent = 'Criando usuário…'; }
+
+  try {
+    const { data, error } = await _sb.functions.invoke('criar-usuario', {
+      body: { nome, email, senha, nivel }
+    });
+
+    if (error) {
+      if (errEl) errEl.textContent = error.message || 'Erro ao criar usuário.';
+      return;
+    }
+
+    if (data?.error) {
+      if (errEl) errEl.textContent = data.error;
+      return;
+    }
+
+    fecharModal('modal-novo-usuario');
+    alert('Usuário criado com sucesso!\nE-mail: ' + email + '\nSenha: ' + senha);
+    carregarTabelaUsuarios();
+
+  } catch (e) {
+    if (errEl) errEl.textContent = 'Erro inesperado: ' + e.message;
+  }
 }
 
 async function abrirModalEditar(id) {
