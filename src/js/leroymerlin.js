@@ -176,36 +176,52 @@ function _lmRenderTabela(rows) {
     + '</table>';
 }
 
-// ── IMPRESSÃO PADRÃO (nova janela, landscape) ─────────────────────────────────
+// ── IMPRESSÃO PADRÃO (nova janela, landscape, separado por tipo) ──────────────
 
 function lmImprimir() {
   var rows = _lmFiltrar(_lmData);
   if (!rows.length) { alert('Nenhum dado para imprimir.'); return; }
 
-  var LOGO     = new URL('Logos/logo-cores.png', window.location.href).href;
-  var dateStr  = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
-  var filtros  = [];
-  if (_lmFiltroTipo)   filtros.push('Tipo: ' + _lmFiltroTipo);
-  if (_lmFiltroModelo) filtros.push('Modelo: ' + _lmFiltroModelo);
-  if (_lmFiltroLocal)  filtros.push('Local: ' + _lmFiltroLocal);
-  if (_lmFiltroLinha)  filtros.push('Linha: ' + _lmFiltroLinha);
-  var filtroStr = filtros.length ? filtros.join(' · ') : 'Todos os produtos';
+  var LOGO = new URL('Logos/logo-cores.png', window.location.href).href;
 
-  var trs = rows.map(function(r) {
-    var precoConcrem = parseFloat(r.preco_concrem) || 0;
-    if (typeof rjGetM === 'function') precoConcrem *= rjGetM('Leroy Merlin', 'leroy', r.linha_cor);
-    return '<tr>'
-      + '<td>' + _lmEsc(r.tipo || '') + '</td>'
-      + '<td>' + _lmEsc(r.batente    || '—') + '</td>'
-      + '<td>' + _lmEsc(r.modelo     || '—') + '</td>'
-      + '<td>' + _lmEsc(r.local      || '—') + '</td>'
-      + '<td>' + _lmEsc(r.linha_cor  || '—') + '</td>'
-      + '<td>' + _lmEsc(r.largura_tipo || '—') + '</td>'
-      + '<td style="text-align:right">' + _lmFmt(r.preco_leroy) + '</td>'
-      + '<td style="text-align:right;font-weight:bold;color:#1a5c2a">' + _lmFmt(precoConcrem) + '</td>'
-      + '<td style="text-align:right">' + _lmFmt(r.frete) + '</td>'
-      + '<td style="text-align:center">' + (r.reajustar ? 'Sim' : 'Não') + '</td>'
-      + '</tr>';
+  // Agrupar por tipo mantendo a ordem de aparição
+  var tiposOrdem = [];
+  var porTipo = {};
+  rows.forEach(function(r) {
+    var tipo = r.tipo || 'Outros';
+    if (!porTipo[tipo]) { porTipo[tipo] = []; tiposOrdem.push(tipo); }
+    porTipo[tipo].push(r);
+  });
+
+  var THEAD = '<thead><tr>'
+    + '<th>BATENTE</th><th>MODELO</th><th>LOCAL</th>'
+    + '<th>LINHA/COR</th><th>LARGURA</th>'
+    + '<th>PREÇO LEROY</th><th>PREÇO CONCREM</th><th>FRETE</th>'
+    + '</tr></thead>';
+
+  var sections = tiposOrdem.map(function(tipo, idx) {
+    var tipoRows = porTipo[tipo];
+    var trs = tipoRows.map(function(r, i) {
+      var precoConcrem = parseFloat(r.preco_concrem) || 0;
+      if (typeof rjGetM === 'function') precoConcrem *= rjGetM('Leroy Merlin', 'leroy', r.linha_cor);
+      var zebra = i % 2 !== 0 ? 'background:#f5f5f5;' : '';
+      return '<tr>'
+        + '<td style="' + zebra + '">' + _lmEsc(r.batente    || '—') + '</td>'
+        + '<td style="' + zebra + '">' + _lmEsc(r.modelo     || '—') + '</td>'
+        + '<td style="' + zebra + '">' + _lmEsc(r.local      || '—') + '</td>'
+        + '<td style="' + zebra + '">' + _lmEsc(r.linha_cor  || '—') + '</td>'
+        + '<td style="' + zebra + '">' + _lmEsc(r.largura_tipo || '—') + '</td>'
+        + '<td style="text-align:right;' + zebra + '">' + _lmFmt(r.preco_leroy) + '</td>'
+        + '<td style="text-align:right;font-weight:bold;color:#1a5c2a;' + zebra + '">' + _lmFmt(precoConcrem) + '</td>'
+        + '<td style="text-align:right;' + zebra + '">' + _lmFmt(r.frete) + '</td>'
+        + '</tr>';
+    }).join('');
+
+    var pb = idx > 0 ? 'page-break-before:always;' : '';
+    return '<div style="' + pb + '">'
+      + '<div class="tipo-hdr">' + _lmEsc(tipo.toUpperCase()) + ' <span class="tipo-count">(' + tipoRows.length + ' itens)</span></div>'
+      + '<table>' + THEAD + '<tbody>' + trs + '</tbody></table>'
+      + '</div>';
   }).join('');
 
   var html = '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">'
@@ -213,35 +229,20 @@ function lmImprimir() {
     + '<style>'
     + '@page{size:landscape;margin:10mm}'
     + 'body{font-family:Arial,sans-serif;font-size:9px;color:#222;margin:0;padding:0}'
-    + '.ph{display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid #1a5c2a;padding-bottom:6px;margin-bottom:8px}'
-    + '.ph img{height:36px}'
-    + '.ph-info{text-align:right}'
-    + '.ph-title{font-size:14px;font-weight:bold;color:#1a2b4a}'
-    + '.ph-sub{font-size:9px;color:#555;margin-top:2px}'
-    + '.ph-badge{display:inline-block;background:#1a5c2a;color:#fff;font-size:8px;font-weight:bold;padding:2px 7px;border-radius:10px;margin-top:3px}'
-    + 'table{border-collapse:collapse;width:100%}'
+    + '.ph{display:flex;align-items:center;gap:12px;border-bottom:2px solid #1a5c2a;padding-bottom:6px;margin-bottom:12px}'
+    + '.ph img{height:34px}'
+    + '.ph-badge{display:inline-block;background:#1a5c2a;color:#fff;font-size:8px;font-weight:bold;padding:2px 8px;border-radius:10px;-webkit-print-color-adjust:exact;print-color-adjust:exact}'
+    + '.tipo-hdr{font-size:11px;font-weight:bold;color:#1a2b4a;background:#e8f0fb;padding:4px 8px;margin:10px 0 4px;border-left:3px solid #1a2b4a;-webkit-print-color-adjust:exact;print-color-adjust:exact}'
+    + '.tipo-count{font-size:8.5px;font-weight:normal;color:#555}'
+    + 'table{border-collapse:collapse;width:100%;margin-bottom:4px}'
     + 'th{background:#1a2b4a;color:#fff;font-size:8.5px;padding:4px 6px;text-align:left;-webkit-print-color-adjust:exact;print-color-adjust:exact}'
     + 'td{border:0.5px solid #ddd;padding:3px 6px;font-size:8.5px;vertical-align:middle}'
-    + 'tr:nth-child(even) td{background:#f5f5f5;-webkit-print-color-adjust:exact;print-color-adjust:exact}'
-    + '.footer{margin-top:8px;font-size:7.5px;color:#888;text-align:center}'
     + '</style></head><body>'
     + '<div class="ph">'
     + '<img src="' + LOGO + '" alt="CONCREM">'
-    + '<div class="ph-info">'
-    + '<div class="ph-title">Tabela Leroy Merlin</div>'
-    + '<div class="ph-sub">' + filtroStr + ' · ' + dateStr + '</div>'
     + '<span class="ph-badge">Canal Exclusivo · Preços CIF</span>'
     + '</div>'
-    + '</div>'
-    + '<table>'
-    + '<thead><tr>'
-    + '<th>TIPO</th><th>BATENTE</th><th>MODELO</th><th>LOCAL</th>'
-    + '<th>LINHA/COR</th><th>LARGURA</th>'
-    + '<th>PREÇO LEROY</th><th>PREÇO CONCREM</th><th>FRETE</th><th>REAJUSTAR</th>'
-    + '</tr></thead>'
-    + '<tbody>' + trs + '</tbody>'
-    + '</table>'
-    + '<div class="footer">CONCREM Portas Premium · ' + rows.length + ' itens · Impresso em ' + dateStr + '</div>'
+    + sections
     + '</body></html>';
 
   var w = window.open('', '_blank', 'width=1100,height=700');
