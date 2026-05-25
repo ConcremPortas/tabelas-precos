@@ -232,7 +232,7 @@ function lmImprimir() {
     + '.ph{display:flex;align-items:center;gap:12px;border-bottom:2px solid #1a5c2a;padding-bottom:6px;margin-bottom:12px}'
     + '.ph img{height:34px}'
     + '.ph-badge{display:inline-block;background:#1a5c2a;color:#fff;font-size:8px;font-weight:bold;padding:2px 8px;border-radius:10px;-webkit-print-color-adjust:exact;print-color-adjust:exact}'
-    + '.tipo-hdr{font-size:11px;font-weight:bold;color:#1a2b4a;background:#e8f0fb;padding:4px 8px;margin:10px 0 4px;border-left:3px solid #1a2b4a;-webkit-print-color-adjust:exact;print-color-adjust:exact}'
+    + '.tipo-hdr{font-size:11px;font-weight:bold;color:#1a2b4a;background:#e8f0fb;padding:4px 8px;margin:10px 0 4px;border-left:3px solid #1a2b4a;-webkit-print-color-adjust:exact;print-color-adjust:exact;break-after:avoid;page-break-after:avoid}'
     + '.tipo-count{font-size:8.5px;font-weight:normal;color:#555}'
     + 'table{border-collapse:collapse;width:100%;margin-bottom:4px}'
     + 'th{background:#1a2b4a;color:#fff;font-size:8.5px;padding:4px 6px;text-align:left;-webkit-print-color-adjust:exact;print-color-adjust:exact}'
