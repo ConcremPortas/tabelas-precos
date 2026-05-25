@@ -463,7 +463,7 @@ function renderTable(section) {
   return `${header}${indicator}${table}`;
 }
 
-const MGMT_SECTIONS = new Set(['aplicarReajuste', 'historicoReajustes', 'usuarios', 'permissoes', 'gerenciarTabelas', 'leroyMerlin']);
+const MGMT_SECTIONS = new Set(['aplicarReajuste', 'historicoReajustes', 'usuarios', 'permissoes', 'gerenciarTabelas']);
 
 function render() {
   const content = document.getElementById('content');
@@ -471,14 +471,19 @@ function render() {
   applySearch();
   if (typeof onAfterRender === 'function') onAfterRender(currentSection);
 
-  // Oculta controles do topbar nas páginas de gestão
-  const isMgmt = MGMT_SECTIONS.has(currentSection);
-  const hide = el => { if (el) el.style.display = isMgmt ? 'none' : ''; };
-  hide(document.getElementById('channel-tabs'));
-  hide(document.querySelector('.channel-label'));
-  hide(document.querySelector('.search-wrap'));
-  hide(document.querySelector('.print-btn'));
-  hide(document.getElementById('date-badge'));
+  const isMgmt  = MGMT_SECTIONS.has(currentSection);
+  const isLeroy = currentSection === 'leroyMerlin';
+
+  // Channel-tabs: oculto para gestão e para Leroy (canal exclusivo, não usa multiplicador)
+  const hideChannel = el => { if (el) el.style.display = (isMgmt || isLeroy) ? 'none' : ''; };
+  hideChannel(document.getElementById('channel-tabs'));
+  hideChannel(document.querySelector('.channel-label'));
+
+  // Search, print, date: visíveis para Leroy (ocultos só em gestão pura)
+  const hideMgmt = el => { if (el) el.style.display = isMgmt ? 'none' : ''; };
+  hideMgmt(document.querySelector('.search-wrap'));
+  hideMgmt(document.querySelector('.print-btn'));
+  hideMgmt(document.getElementById('date-badge'));
 }
 
 // ── NAVIGATION ────────────────────────────────────────

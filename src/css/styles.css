@@ -2562,9 +2562,16 @@
 .lm-toolbar {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 12px;
   padding: 16px 0 16px 0;
   flex-wrap: wrap;
+}
+.lm-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
 }
 .lm-filters {
   display: flex;
@@ -2607,6 +2614,25 @@
   white-space: nowrap;
 }
 .lm-print-btn:hover { background: #f3f4f6; border-color: var(--color-primary); }
+
+.lm-export-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 14px;
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-strong);
+  border-radius: 8px;
+  color: var(--color-text-primary);
+  font-size: 13px;
+  font-family: inherit;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+.lm-export-btn:hover { background: #f0fdf4; border-color: #16a34a; color: #16a34a; }
 
 /* Tabela */
 .lm-table {

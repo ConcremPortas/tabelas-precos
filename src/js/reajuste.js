@@ -59,6 +59,9 @@ function rjGetLinhas(produto, canal) {
     case 'Batente & Alizar ELO':        o.eloAcab.batente?.grupos?.forEach(g => g.itens.forEach(it => set.add(it.acab))); break;
     case 'Rodapé LACCA':                fromRodape(o.laccaAcab); break;
     case 'Rodapé Melamínico':           fromRodape(o.melamAcab); break;
+    case 'Leroy Merlin':
+      if (typeof _lmData !== 'undefined') _lmData.forEach(r => { if (r.linha_cor) set.add(r.linha_cor); });
+      break;
   }
   return ['___all', ...[...set]];
 }
@@ -383,6 +386,7 @@ function renderAplicarReajuste() {
             <option value="Rodapé Melamínico">Rodapé Melamínico</option>
             <option value="Portas ELO">Portas ELO</option>
             <option value="Batente &amp; Alizar ELO">Batente &amp; Alizar ELO</option>
+            <option value="Leroy Merlin">Leroy Merlin</option>
           </select>
         </div>
 
@@ -394,6 +398,7 @@ function renderAplicarReajuste() {
             <option value="distribuidora">Distribuidora</option>
             <option value="dag">DAG</option>
             <option value="elo">ELO</option>
+            <option value="leroy">Leroy Merlin</option>
           </select>
         </div>
 
@@ -445,7 +450,7 @@ function renderAplicarReajuste() {
 }
 
 // 9. Formulário
-const RJ_CANAL_LABELS = { fabrica: 'Fábrica', distribuidora: 'Distribuidora', dag: 'DAG', elo: 'ELO' };
+const RJ_CANAL_LABELS = { fabrica: 'Fábrica', distribuidora: 'Distribuidora', dag: 'DAG', elo: 'ELO', leroy: 'Leroy Merlin' };
 
 function rjResetForm() {
   ['rj-produto','rj-canal','rj-pct','rj-motivo'].forEach(id => {
@@ -462,6 +467,10 @@ function rjResetForm() {
 
 function rjOnProdutoOrCanal() {
   const produto = document.getElementById('rj-produto').value;
+  // Leroy Merlin tem canal fixo — selecionar automaticamente
+  if (produto === 'Leroy Merlin') {
+    document.getElementById('rj-canal').value = 'leroy';
+  }
   const canal   = document.getElementById('rj-canal').value;
   const linhaEl = document.getElementById('rj-linha');
   linhaEl.innerHTML = '';
