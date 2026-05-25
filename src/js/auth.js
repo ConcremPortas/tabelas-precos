@@ -1,7 +1,7 @@
 const _sb = window.supabase.createClient(
   window.__SUPABASE_URL__      || '',
   window.__SUPABASE_ANON_KEY__ || '',
-  { auth: { persistSession: false, detectSessionInUrl: false } }
+  { auth: { storage: window.sessionStorage, detectSessionInUrl: false } }
 );
 
 window.currentUser  = null;
