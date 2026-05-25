@@ -1003,7 +1003,7 @@ async function gmExecuteSave() {
       };
       await _sb.from('concremtp_audit_tabelas').insert(auditEntry);
     } catch(auditErr) {
-      console.warn('[gerenciador] audit log falhou (não crítico):', auditErr.message);
+      // audit log falhou — não crítico
     }
 
     // ── Registrar no Histórico de Reajustes ───────────────
@@ -1068,7 +1068,7 @@ async function gmExecuteSave() {
         if (typeof _rjSbInsertReajuste === 'function') _rjSbInsertReajuste(histEntry);
       }
     } catch(histErr) {
-      console.warn('[gerenciador] histórico de reajustes falhou (não crítico):', histErr.message);
+      // histórico de reajustes falhou — não crítico
     }
 
     var res = await _sb.from('concremtp_itens_tabela').select('*').eq('ativo', true);
