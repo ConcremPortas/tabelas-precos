@@ -46,6 +46,7 @@ function buildBreadcrumb() {
     usuarios:           'Usuários',
     permissoes:         'Permissões',
     gerenciarTabelas:   'Gerenciar Tabelas',
+    leroyMerlin:        'Leroy Merlin',
   };
   const TL = { batente: 'Batente', alizar9: 'Alizar 9mm', alizar15: 'Alizar 15mm', rodape: 'Rodapé', kitCorrer: 'Kit Correr' };
   const parts = [SL[currentSection] || currentSection, CHANNELS[currentChannel].label];
@@ -391,6 +392,7 @@ function renderTable(section) {
   if (section === 'usuarios')           return (typeof renderUsuarios   === 'function' ? renderUsuarios()   : '<div class="empty-state"><div class="empty-icon">🔒</div><p class="empty-text">Módulo não disponível.</p></div>');
   if (section === 'permissoes')         return (typeof renderPermissoes       === 'function' ? renderPermissoes()       : '<div class="empty-state"><div class="empty-icon">🔒</div><p class="empty-text">Módulo não disponível.</p></div>');
   if (section === 'gerenciarTabelas')   return (typeof renderGerenciarTabelas === 'function' ? renderGerenciarTabelas() : '<div class="empty-state"><div class="empty-icon">🔒</div><p class="empty-text">Módulo não disponível.</p></div>');
+  if (section === 'leroyMerlin')        return (typeof renderLeroyMerlin      === 'function' ? renderLeroyMerlin()      : '<div class="empty-state"><div class="empty-icon">🏪</div><p class="empty-text">Módulo não disponível.</p></div>');
   if (section === 'portasUV') {
     const chKey = portasUVData[currentChannel] ? currentChannel : 'distribuidora';
     return renderColecaoSection(portasUVData, 'Portas UV / Melamínico', chKey);
@@ -461,7 +463,7 @@ function renderTable(section) {
   return `${header}${indicator}${table}`;
 }
 
-const MGMT_SECTIONS = new Set(['aplicarReajuste', 'historicoReajustes', 'usuarios', 'permissoes', 'gerenciarTabelas']);
+const MGMT_SECTIONS = new Set(['aplicarReajuste', 'historicoReajustes', 'usuarios', 'permissoes', 'gerenciarTabelas', 'leroyMerlin']);
 
 function render() {
   const content = document.getElementById('content');

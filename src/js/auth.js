@@ -44,11 +44,11 @@ const PERMISSOES_PADRAO = {
 const ACESSO = {
   administrador: ['portasLacca','portasUV','portasELO','laccaAcab',
     'melamAcab','batenteELO','aplicarReajuste','historicoReajustes',
-    'usuarios','permissoes','gerenciarTabelas'],
+    'usuarios','permissoes','gerenciarTabelas','leroyMerlin'],
   gerente: ['portasLacca','portasUV','portasELO','laccaAcab',
-    'melamAcab','batenteELO','aplicarReajuste','historicoReajustes'],
+    'melamAcab','batenteELO','aplicarReajuste','historicoReajustes','leroyMerlin'],
   vendedor: ['portasLacca','portasUV','portasELO','laccaAcab',
-    'melamAcab','batenteELO'],
+    'melamAcab','batenteELO','leroyMerlin'],
 };
 
 // ── UI ────────────────────────────────────────────────────

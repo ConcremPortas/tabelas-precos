@@ -2494,3 +2494,193 @@
        url('../fonts/tabler/fonts/tabler-icons.woff') format('woff'),
        url('../fonts/tabler/fonts/tabler-icons.ttf') format('truetype');
 }
+
+/* ── LEROY MERLIN ────────────────────────────────────────────────────────── */
+
+.lm-canal-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #dcfce7;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 2px 9px;
+  border-radius: 20px;
+  vertical-align: middle;
+  margin-left: 8px;
+}
+
+/* Loading */
+.lm-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 64px 0;
+  gap: 16px;
+}
+.lm-spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid var(--color-border);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: lm-spin 0.7s linear infinite;
+}
+@keyframes lm-spin { to { transform: rotate(360deg); } }
+.lm-loading-text {
+  color: var(--color-text-secondary);
+  font-size: 14px;
+}
+
+/* Empty state */
+.lm-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 64px 0;
+  gap: 12px;
+}
+.lm-empty-icon {
+  font-size: 40px;
+  color: var(--color-text-muted);
+}
+.lm-empty-icon .ti {
+  font-size: 40px;
+  color: var(--color-text-muted);
+}
+.lm-empty-text {
+  color: var(--color-text-secondary);
+  font-size: 14px;
+}
+
+/* Toolbar */
+.lm-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 0 16px 0;
+  flex-wrap: wrap;
+}
+.lm-filters {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  flex: 1;
+}
+.lm-select {
+  height: 36px;
+  padding: 0 10px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 8px;
+  background: var(--color-bg-card);
+  color: var(--color-text-primary);
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.15s;
+  min-width: 150px;
+}
+.lm-select:hover { border-color: var(--color-primary); }
+.lm-select:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(22,163,74,0.12); }
+
+.lm-print-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 16px;
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-strong);
+  border-radius: 8px;
+  color: var(--color-text-primary);
+  font-size: 13px;
+  font-family: inherit;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+.lm-print-btn:hover { background: #f3f4f6; border-color: var(--color-primary); }
+
+/* Tabela */
+.lm-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.lm-table thead th {
+  background: #f2f2f2;
+  color: var(--color-text-primary);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 2px solid var(--color-border-strong);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  white-space: nowrap;
+}
+.lm-row td {
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text-primary);
+  vertical-align: middle;
+  white-space: nowrap;
+}
+.lm-zebra td { background: #fafafa; }
+.lm-row:hover td { background: #fffde7 !important; }
+
+/* Type badges */
+.lm-type-badge {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+.lm-badge-correr    { background: #dbeafe; color: #1d4ed8; }
+.lm-badge-giro      { background: #dcfce7; color: #15803d; }
+.lm-badge-pivotante { background: #ede9fe; color: #7c3aed; }
+.lm-badge-folha     { background: #ffedd5; color: #c2410c; }
+.lm-badge-alizar    { background: #f3f4f6; color: #6b7280; }
+
+/* Preços */
+.lm-price {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.lm-price-concrem {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: #16a34a;
+  font-weight: 600;
+}
+
+/* Badges Sim/Não */
+.lm-reaj-badge {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.lm-badge-sim { background: #dcfce7; color: #15803d; }
+.lm-badge-nao { background: #f3f4f6; color: #6b7280; }
+
+/* Print Leroy Merlin */
+@media print {
+  .lm-toolbar, .lm-filters, .lm-print-btn { display: none !important; }
+  .lm-table { font-size: 11px; }
+  .lm-table thead th { position: static; }
+  @page { size: A4 landscape; margin: 10mm; }
+}
