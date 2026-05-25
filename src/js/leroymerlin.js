@@ -193,6 +193,8 @@ function lmImprimir() {
     porTipo[tipo].push(r);
   });
 
+  var dateStr = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
+
   var THEAD = '<thead><tr>'
     + '<th>BATENTE</th><th>MODELO</th><th>LOCAL</th>'
     + '<th>LINHA/COR</th><th>LARGURA</th>'
@@ -217,32 +219,40 @@ function lmImprimir() {
         + '</tr>';
     }).join('');
 
-    var pb = idx > 0 ? 'margin-top:14px;' : '';
+    var pb = idx > 0 ? 'margin-top:10px;' : '';
     return '<div style="' + pb + '">'
-      + '<div class="tipo-hdr">' + _lmEsc(tipo.toUpperCase()) + ' <span class="tipo-count">(' + tipoRows.length + ' itens)</span></div>'
-      + '<table>' + THEAD + '<tbody>' + trs + '</tbody></table>'
+      + '<div class="psep">' + _lmEsc(tipo.toUpperCase()) + ' <span class="psep-count">(' + tipoRows.length + ' itens)</span></div>'
+      + '<table class="ppt">' + THEAD + '<tbody>' + trs + '</tbody></table>'
       + '</div>';
   }).join('');
 
   var html = '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">'
     + '<title>Leroy Merlin — CONCREM</title>'
     + '<style>'
-    + '@page{size:landscape;margin:0}'
-    + 'body{font-family:Arial,sans-serif;font-size:9px;color:#222;margin:0;padding:10mm}'
-    + '.ph{display:flex;align-items:center;gap:12px;border-bottom:2px solid #1a5c2a;padding-bottom:6px;margin-bottom:12px}'
-    + '.ph img{height:34px}'
-    + '.ph-badge{display:inline-block;background:#1a5c2a;color:#fff;font-size:8px;font-weight:bold;padding:2px 8px;border-radius:10px;-webkit-print-color-adjust:exact;print-color-adjust:exact}'
-    + '.tipo-hdr{font-size:11px;font-weight:bold;color:#1a2b4a;background:#e8f0fb;padding:4px 8px;margin:10px 0 4px;border-left:3px solid #1a2b4a;-webkit-print-color-adjust:exact;print-color-adjust:exact;break-after:avoid;page-break-after:avoid}'
-    + '.tipo-count{font-size:8.5px;font-weight:normal;color:#555}'
-    + 'table{border-collapse:collapse;width:100%;margin-bottom:4px}'
-    + 'th{background:#1a2b4a;color:#fff;font-size:8.5px;padding:4px 6px;text-align:center;-webkit-print-color-adjust:exact;print-color-adjust:exact}'
-    + 'td{border:0.5px solid #ddd;padding:3px 6px;font-size:8.5px;vertical-align:middle}'
+    + '* { margin:0; padding:0; box-sizing:border-box; }'
+    + '@page { size:A4 landscape; margin:0; }'
+    + 'body { font-family:Arial,sans-serif; font-size:9px; color:#1a1a1a; background:#fff; padding:8mm 10mm; }'
+    + '.phdr { width:100%; margin-bottom:8px; }'
+    + '.phdr td { padding:0 6px 5px; border-bottom:2.5px solid #1a5c2a; vertical-align:middle; }'
+    + '.phdr-logo { width:90px; } .phdr-logo img { height:30px; }'
+    + '.phdr-title { text-align:center; font-size:13px; font-weight:bold; text-transform:uppercase; }'
+    + '.phdr-chan { text-align:right; font-size:11px; font-weight:bold; color:#1a5c2a; text-transform:uppercase; white-space:nowrap; }'
+    + '.psep { background:#1a252f; color:#fff; font-size:9.5px; font-weight:bold; padding:3px 8px; margin:8px 0 3px; break-after:avoid; page-break-after:avoid; -webkit-print-color-adjust:exact; print-color-adjust:exact; }'
+    + '.psep-count { font-size:8px; font-weight:normal; color:#aaa; }'
+    + '.ppt { border-collapse:collapse; width:100%; margin-bottom:3px; }'
+    + '.ppt th { background:#2c3e50; color:#fff; font-size:8px; padding:3px 5px; text-align:center; border:0.5px solid #444; -webkit-print-color-adjust:exact; print-color-adjust:exact; }'
+    + '.ppt td { border:0.5px solid #ccc; padding:2px 5px; font-size:8px; vertical-align:middle; }'
+    + '.pftr { margin-top:8px; border-top:1px solid #ccc; padding-top:4px; text-align:center; }'
+    + '.pftr img { height:18px; opacity:.5; }'
+    + '.pftr-date { font-size:7px; color:#888; margin-top:2px; }'
     + '</style></head><body>'
-    + '<div class="ph">'
-    + '<img src="' + LOGO + '" alt="CONCREM">'
-    + '<span class="ph-badge">Canal Exclusivo · Preços CIF</span>'
-    + '</div>'
+    + '<table class="phdr" width="100%"><tr>'
+    + '<td class="phdr-logo"><img src="' + LOGO + '" alt="CONCREM"></td>'
+    + '<td class="phdr-title">TABELA LEROY MERLIN — PREÇOS CIF</td>'
+    + '<td class="phdr-chan">Canal Exclusivo</td>'
+    + '</tr></table>'
     + sections
+    + '<div class="pftr"><img src="' + LOGO + '" alt="CONCREM"><div class="pftr-date">' + dateStr + '</div></div>'
     + '</body></html>';
 
   var w = window.open('', '_blank', 'width=1100,height=700');
