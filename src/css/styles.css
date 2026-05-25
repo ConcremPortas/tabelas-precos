@@ -1219,6 +1219,7 @@
   }
   .rj-textarea { resize: vertical; min-height: 80px; }
   .rj-hint { font-size: 11px; color: var(--color-text-muted); margin-top: 2px; }
+  .rj-opt-todos { font-weight: 600; color: var(--color-primary); font-style: italic; }
   .rj-preview-box {
     background: var(--color-primary-bg); border: 1px solid var(--color-primary-border); border-radius: 8px;
     padding: 13px 16px; margin-bottom: 16px; display: none;
@@ -1295,7 +1296,8 @@
   .hr-nav-btn:hover:not(:disabled) { background: var(--color-bg-app); border-color: var(--color-border-strong); }
   .hr-nav-btn:disabled { opacity: .4; cursor: default; }
   .hr-month-label { font-weight: 700; font-size: var(--font-base); color: var(--color-text-primary); min-width: 140px; text-align: center; }
-  .hr-filters { display: flex; gap: var(--space-sm); flex-wrap: wrap; flex: 1; }
+  .hr-filters { display: flex; gap: var(--space-sm); flex-wrap: wrap; flex: 1; align-items: center; }
+  .hr-filters .cs-wrapper { width: auto; flex: 1; min-width: 160px; }
   .hr-select {
     padding: 8px 12px; border-radius: var(--radius-md); border: 1px solid var(--color-border);
     font-size: var(--font-sm); font-family: var(--font); color: var(--color-text-primary);
@@ -2014,6 +2016,7 @@
     padding: var(--space-md) var(--space-lg); border-bottom: 1px solid var(--color-border);
   }
   .mgmt-filter-bar .hr-select { min-width: 160px; }
+  .mgmt-filter-bar .cs-wrapper { width: auto; min-width: 160px; }
   .mgmt-table { width: 100%; border-collapse: collapse; font-size: var(--font-base); }
   .mgmt-table th {
     padding: 12px 20px; text-align: left; font-size: var(--font-xs); font-weight: 600;
@@ -2034,7 +2037,11 @@
   /* ── GERENCIADOR DE TABELAS ───────────────────────────────────────── */
 
   /* Edit button row in page-header */
-  .gm-edit-btn-wrap { display: flex; gap: 8px; margin-top: var(--space-sm); flex-wrap: wrap; }
+  .gm-edit-btn-wrap { display: flex; gap: 8px; margin-top: var(--space-sm); flex-wrap: wrap; align-items: center; }
+  /* Quando dentro do page-header (flex row), remove margin-top e empurra para a direita */
+  .page-header .gm-edit-btn-wrap { margin-top: 0; margin-left: auto; }
+  /* Se o botão de atalho (+Grupo/Linha) já está presente, ele ocupa o margin-left:auto */
+  .page-header .gt-shortcut-btn ~ .gm-edit-btn-wrap { margin-left: 0; }
   .gm-btn-edit {
     padding: 5px 12px;
     border-radius: var(--radius-sm);
@@ -2575,9 +2582,19 @@
 }
 .lm-filters {
   display: flex;
+  flex-direction: row;
   gap: 8px;
   flex-wrap: wrap;
   flex: 1;
+  align-items: center;
+}
+.lm-filters .cs-wrapper {
+  width: auto;
+  flex: 1;
+  min-width: 150px;
+}
+.lm-filters .cs-trigger {
+  white-space: nowrap;
 }
 .lm-select {
   height: 36px;
@@ -2709,4 +2726,197 @@
   .lm-table { font-size: 11px; }
   .lm-table thead th { position: static; }
   @page { size: A4 landscape; margin: 10mm; }
+}
+
+/* ── CUSTOM SELECT ─────────────────────────────────────────────────────────── */
+.cs-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.cs-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  padding: 9px 12px;
+  background: #ffffff;
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: var(--font, inherit);
+  color: var(--color-text-primary, #111827);
+  cursor: pointer;
+  text-align: left;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+.cs-trigger:hover:not(:disabled):not(.cs-trigger-disabled) {
+  border-color: #d1d5db;
+  background: #fafafa;
+}
+
+.cs-trigger.cs-trigger-open {
+  border-color: #16a34a;
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.08);
+}
+
+.cs-trigger.cs-trigger-disabled,
+.cs-trigger:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.cs-trigger-text {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.cs-chevron {
+  flex-shrink: 0;
+  color: #9ca3af;
+  transition: transform 0.15s ease;
+}
+
+.cs-trigger.cs-trigger-open .cs-chevron {
+  transform: rotate(180deg);
+}
+
+/* Painel flutuante (fixed, posicionado via JS) */
+.cs-panel {
+  position: fixed;
+  z-index: 9999;
+  background: #ffffff;
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.10), 0 2px 6px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  outline: none;
+  min-width: 160px;
+}
+
+/* Campo de busca */
+.cs-search-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--color-border, #e5e7eb);
+  background: #fafafa;
+}
+
+.cs-search-icon {
+  flex-shrink: 0;
+  color: #9ca3af;
+}
+
+.cs-search-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 13px;
+  font-family: var(--font, inherit);
+  color: var(--color-text-primary, #111827);
+  min-width: 0;
+}
+
+.cs-search-input::placeholder { color: #9ca3af; }
+
+/* Lista de opções */
+.cs-opt-list {
+  max-height: 220px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #d1d5db transparent;
+}
+
+.cs-opt-list::-webkit-scrollbar { width: 4px; }
+.cs-opt-list::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 4px; }
+
+.cs-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 9px 14px;
+  font-size: 13px;
+  color: #374151;
+  cursor: pointer;
+  transition: background 0.1s;
+  user-select: none;
+}
+
+.cs-option:hover:not(.cs-disabled) {
+  background: #f0fdf4;
+  color: #16a34a;
+}
+
+.cs-option.cs-selected {
+  background: #f0fdf4;
+  color: #16a34a;
+  font-weight: 600;
+}
+
+.cs-option.cs-focused {
+  background: #f0fdf4;
+  outline: 2px solid #16a34a inset;
+}
+
+.cs-option.cs-disabled {
+  color: #9ca3af;
+  cursor: default;
+  pointer-events: none;
+}
+
+.cs-opt-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cs-check {
+  flex-shrink: 0;
+  color: #16a34a;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.cs-empty {
+  padding: 16px 14px;
+  text-align: center;
+  color: #9ca3af;
+  font-size: 12px;
+}
+
+/* Opções "Todos" (classe preservada do <option>) */
+.cs-option.rj-opt-todos .cs-opt-label {
+  font-weight: 600;
+  color: var(--color-primary, #16a34a);
+  font-style: italic;
+}
+
+/* Custom select no contexto de formulários de reajuste */
+.rj-field .cs-trigger {
+  border: 1px solid var(--color-border-strong, #d1d5db);
+  border-radius: 6px;
+  padding: 10px 12px;
+}
+
+.rj-field .cs-trigger.cs-trigger-open {
+  border-color: var(--color-primary, #16a34a);
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.10);
+}
+
+/* Print: oculta painéis flutuantes */
+@media print {
+  .cs-panel { display: none !important; }
 }

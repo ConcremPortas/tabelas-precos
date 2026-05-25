@@ -436,25 +436,15 @@ async function salvarNovoUsuario() {
 
   if (errEl) { errEl.style.color = '#718096'; errEl.textContent = 'Criando…'; }
 
-  const { data: authData, error: authErr } = await _sb.auth.signUp({
-    email, password: senha, options: { data: { nome, nivel } }
+  const { data, error } = await _sb.functions.invoke('criar-usuario', {
+    body: { nome, email, senha, nivel }
   });
 
-  if (authErr) {
-    if (errEl) errEl.textContent = _traduzErroAuth(authErr.message);
+  if (error || !data?.success) {
+    const msg = data?.error || error?.message || 'Erro ao criar usuário.';
+    if (errEl) errEl.textContent = _traduzErroAuth(msg);
     return;
   }
-
-  const userId = authData.user?.id;
-  if (!userId) {
-    if (errEl) errEl.textContent = 'Desative "Email Confirmation" no Supabase Auth.';
-    return;
-  }
-
-  const { error: dbErr } = await _sb.from('concremtp_usuarios')
-    .insert({ id: userId, nome, email, nivel, ativo: true });
-
-  if (dbErr) { if (errEl) errEl.textContent = _traduzErroAuth(dbErr.message); return; }
 
   fecharModal('modal-novo-usuario');
   alert(`Usuário criado!\nE-mail: ${email}\nSenha: ${senha}`);

@@ -9,6 +9,8 @@ let _gtActiveTab   = 'grupos';
 let _gtPreSelected = null; // { produto, canal } — vindo do botão de atalho
 let _gtEditGrupo   = null; // grupo em edição
 let _gtEditLinha   = null; // linha em edição
+let _gtLeroyItems  = [];
+let _gtLeroyPreTipo = null;
 
 // ── CONSTANTS ─────────────────────────────────────────────────────────────────
 const GT_PRODUTOS = [
@@ -188,6 +190,77 @@ function renderGerenciarTabelas() {
       </div>
     </div>
 
+    <!-- NOVO ITEM LEROY -->
+    <div class="gt-card" id="gt-card-leroy" style="display:none">
+      <div class="gt-card-hdr">
+        <i class="ti ti-building-store"></i>
+        <span>Novo Item — Leroy Merlin</span>
+      </div>
+      <div class="gt-form">
+
+        <div class="gt-field">
+          <label class="gt-label">TIPO</label>
+          <select id="gt-lm-tipo" class="gt-input" onchange="gtUpdateLeroyPreview()">
+            <option value="">Selecione o tipo…</option>
+            <option value="ALIZAR">ALIZAR</option>
+            <option value="CORRER">CORRER</option>
+            <option value="FOLHA">FOLHA</option>
+            <option value="GIRO">GIRO</option>
+            <option value="PIVOTANTE">PIVOTANTE</option>
+          </select>
+        </div>
+
+        <div class="gt-field-row">
+          <div class="gt-field">
+            <label class="gt-label">BATENTE</label>
+            <input id="gt-lm-batente" class="gt-input" placeholder="Ex: 12" oninput="gtUpdateLeroyPreview()">
+          </div>
+          <div class="gt-field">
+            <label class="gt-label">MODELO</label>
+            <input id="gt-lm-modelo" class="gt-input" placeholder="Lisa / Frisada" oninput="gtUpdateLeroyPreview()">
+          </div>
+        </div>
+
+        <div class="gt-field-row">
+          <div class="gt-field">
+            <label class="gt-label">LOCAL</label>
+            <input id="gt-lm-local" class="gt-input" placeholder="CD / CROSS" oninput="gtUpdateLeroyPreview()">
+          </div>
+          <div class="gt-field">
+            <label class="gt-label">LARGURA</label>
+            <input id="gt-lm-largura" class="gt-input" placeholder="Ex: 60 a 82" oninput="gtUpdateLeroyPreview()">
+          </div>
+        </div>
+
+        <div class="gt-field">
+          <label class="gt-label">LINHA / COR</label>
+          <input id="gt-lm-linha" class="gt-input" placeholder="Ex: AMADEIRADOS" oninput="gtUpdateLeroyPreview()">
+        </div>
+
+        <div class="gt-field-row" style="grid-template-columns:1fr 1fr 1fr">
+          <div class="gt-field">
+            <label class="gt-label">PREÇO LEROY</label>
+            <input type="number" id="gt-lm-leroy" class="gt-input" min="0" step="0.01" placeholder="0.00" oninput="gtUpdateLeroyPreview()">
+          </div>
+          <div class="gt-field">
+            <label class="gt-label">PREÇO CONCREM</label>
+            <input type="number" id="gt-lm-concrem" class="gt-input" min="0" step="0.01" placeholder="0.00" oninput="gtUpdateLeroyPreview()">
+          </div>
+          <div class="gt-field">
+            <label class="gt-label">FRETE</label>
+            <input type="number" id="gt-lm-frete" class="gt-input" min="0" step="0.01" placeholder="0.00" oninput="gtUpdateLeroyPreview()">
+          </div>
+        </div>
+
+        <label class="gt-check-label">
+          <input type="checkbox" id="gt-lm-reaj"> Reajustar
+        </label>
+
+        <p id="gt-lm-erro" class="gt-erro"></p>
+        <button class="gt-btn-primary" onclick="gtAdicionarLeroy()">Adicionar Item</button>
+      </div>
+    </div>
+
   </div><!-- /gt-left -->
 
   <!-- ── PAINEL DIREITO: PREVIEW ─────────────────────────────── -->
@@ -217,6 +290,9 @@ function renderGerenciarTabelas() {
     <button class="gt-list-tab" id="gt-tab-linhas" onclick="gtSwitchTab('linhas')">
       <i class="ti ti-layout-rows"></i> Linhas criadas
     </button>
+    <button class="gt-list-tab" id="gt-tab-leroy" onclick="gtSwitchTab('leroy')">
+      <i class="ti ti-building-store"></i> Itens Leroy Merlin
+    </button>
   </div>
   <div id="gt-list-content" class="gt-list-body">
     <div class="gt-loading">Carregando…</div>
@@ -242,7 +318,16 @@ function renderGerenciarTabelas() {
 
 // ── INIT (chamado pelo onAfterRender) ─────────────────────────────────────────
 async function gtInit() {
-  // Aplica pré-seleção vinda do botão de atalho
+  // Pré-seleção vinda do botão de atalho da Leroy Merlin
+  if (_gtLeroyPreTipo !== null) {
+    const tipo = _gtLeroyPreTipo;
+    _gtLeroyPreTipo = null;
+    gtSwitchTab('leroy');
+    const tipoEl = document.getElementById('gt-lm-tipo');
+    if (tipoEl && tipo) tipoEl.value = tipo;
+  }
+
+  // Aplica pré-seleção vinda do botão de atalho das tabelas normais
   if (_gtPreSelected) {
     const { produto, canal } = _gtPreSelected;
     _gtPreSelected = null;
@@ -264,17 +349,19 @@ async function gtInit() {
 async function gtLoadData() {
   if (!DEMO_MODE && _sb) {
     try {
-      const [gRes, lRes] = await Promise.race([
+      const [gRes, lRes, lmRes] = await Promise.race([
         Promise.all([
           _sb.from('concremtp_grupos_tabela').select('*').eq('ativo', true).order('criado_em', { ascending: false }),
           _sb.from('concremtp_itens_tabela').select('*').eq('ativo', true).order('criado_em', { ascending: false }),
+          _sb.from('concremtp_leroy').select('*').eq('ativo', true).order('tipo').order('linha_cor').order('criado_em', { ascending: false }),
         ]),
         new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 8000)),
       ]);
       _gtGrupos = gRes.data || [];
       _gtLinhas = (lRes.data || []).filter(l => l.criado_por !== null);
+      _gtLeroyItems = lmRes.data || [];
     } catch {
-      _gtGrupos = []; _gtLinhas = [];
+      _gtGrupos = []; _gtLinhas = []; _gtLeroyItems = [];
     }
   }
   gtRenderList();
@@ -758,19 +845,94 @@ function gtUpdatePreview() {
   body.innerHTML = html;
 }
 
+// ── PREVIEW LEROY MERLIN ──────────────────────────────────────────────────────
+function gtUpdateLeroyPreview() {
+  const body  = document.getElementById('gt-preview-body');
+  const badge = document.getElementById('gt-preview-badge');
+  if (!body) return;
+
+  const tipo    = document.getElementById('gt-lm-tipo')?.value || '';
+  const batente = document.getElementById('gt-lm-batente')?.value?.trim() || '';
+  const modelo  = document.getElementById('gt-lm-modelo')?.value?.trim()  || '';
+  const local   = document.getElementById('gt-lm-local')?.value?.trim()   || '';
+  const largura = document.getElementById('gt-lm-largura')?.value?.trim() || '';
+  const linha   = document.getElementById('gt-lm-linha')?.value?.trim()   || '';
+  const leroy   = parseFloat(document.getElementById('gt-lm-leroy')?.value)   || 0;
+  const concrem = parseFloat(document.getElementById('gt-lm-concrem')?.value) || 0;
+  const frete   = parseFloat(document.getElementById('gt-lm-frete')?.value)   || 0;
+
+  if (!tipo) {
+    body.innerHTML = `<div class="gt-preview-empty">
+      <i class="ti ti-building-store" style="font-size:36px;opacity:.25"></i>
+      <p>Selecione o tipo para ver o preview</p>
+    </div>`;
+    if (badge) badge.style.display = 'none';
+    return;
+  }
+
+  if (badge) { badge.textContent = 'Leroy Merlin · ' + tipo; badge.style.display = ''; }
+
+  // Itens existentes do mesmo tipo
+  const existentes = _gtLeroyItems.filter(r => (r.tipo || '').toUpperCase() === tipo.toUpperCase()).slice(0, 6);
+
+  const row = (r, isNew) => {
+    const bg = isNew ? 'background:#f0fdf4' : '';
+    return `<tr style="${bg}">
+      <td style="padding:5px 8px;font-size:12px">${isNew ? '<span class="gt-badge-novo">NOVO</span> ' : ''}${_gtEsc(r.batente||'—')}</td>
+      <td style="padding:5px 8px;font-size:12px">${_gtEsc(r.modelo||'—')}</td>
+      <td style="padding:5px 8px;font-size:12px">${_gtEsc(r.local||'—')}</td>
+      <td style="padding:5px 8px;font-size:12px">${_gtEsc(r.linha_cor||r.linha||'—')}</td>
+      <td style="padding:5px 8px;font-size:12px">${_gtEsc(r.largura_tipo||r.largura||'—')}</td>
+      <td style="padding:5px 8px;font-size:12px;text-align:right">${_gtFmt(r.preco_leroy||r.leroy||0)}</td>
+      <td style="padding:5px 8px;font-size:12px;text-align:right;color:#16a34a;font-weight:600">${_gtFmt(r.preco_concrem||r.concrem||0)}</td>
+    </tr>`;
+  };
+
+  const hasNew = linha || batente || modelo || local;
+  const newItem = { batente, modelo, local, linha_cor: linha, largura_tipo: largura, preco_leroy: leroy, preco_concrem: concrem };
+
+  body.innerHTML = `
+    <div class="gt-preview-table-wrap">
+      <div style="font-size:11px;font-weight:700;letter-spacing:.5px;padding:6px 10px;background:#1a3a1a;color:#fff;border-radius:6px 6px 0 0">
+        ${_gtEsc(tipo)}
+      </div>
+      <table class="gt-preview-table" style="margin-top:0;border-radius:0 0 6px 6px">
+        <thead><tr>
+          <th>BATENTE</th><th>MODELO</th><th>LOCAL</th>
+          <th>LINHA/COR</th><th>LARGURA</th><th>PREÇO LEROY</th><th>PREÇO CONCREM</th>
+        </tr></thead>
+        <tbody>
+          ${existentes.map(r => row(r, false)).join('')}
+          ${hasNew ? row(newItem, true) : ''}
+          ${!existentes.length && !hasNew ? `<tr><td colspan="7" style="padding:12px;text-align:center;color:#9ca3af;font-size:12px">Preencha os campos para ver o preview</td></tr>` : ''}
+        </tbody>
+      </table>
+    </div>`;
+}
+
 // ── LISTA ─────────────────────────────────────────────────────────────────────
 function gtSwitchTab(tab) {
   _gtActiveTab = tab;
-  ['grupos','linhas'].forEach(t => {
+  ['grupos','linhas','leroy'].forEach(t => {
     document.getElementById(`gt-tab-${t}`)?.classList.toggle('active', t === tab);
   });
+  const isLeroy = tab === 'leroy';
+  const cardGrupo = document.getElementById('gt-card-grupo');
+  const cardLinha = document.getElementById('gt-card-linha');
+  const cardLeroy = document.getElementById('gt-card-leroy');
+  if (cardGrupo) cardGrupo.style.display = isLeroy ? 'none' : '';
+  if (cardLinha) cardLinha.style.display = isLeroy ? 'none' : '';
+  if (cardLeroy) cardLeroy.style.display = isLeroy ? '' : 'none';
   gtRenderList();
+  if (isLeroy) setTimeout(gtUpdateLeroyPreview, 50);
 }
 
 function gtRenderList() {
   const el = document.getElementById('gt-list-content');
   if (!el) return;
-  el.innerHTML = _gtActiveTab === 'grupos' ? _gtGruposList() : _gtLinhasList();
+  if (_gtActiveTab === 'grupos') el.innerHTML = _gtGruposList();
+  else if (_gtActiveTab === 'linhas') el.innerHTML = _gtLinhasList();
+  else if (_gtActiveTab === 'leroy') el.innerHTML = _gtLeroyList();
 }
 
 function _gtGruposList() {
@@ -987,6 +1149,107 @@ function gtFecharModal() {
   modal.classList.remove('mi-modal-open');
   setTimeout(() => { modal.style.display = 'none'; }, 200);
   _gtEditGrupo = null; _gtEditLinha = null;
+}
+
+// ── LEROY MERLIN: CRUD ───────────────────────────────────────────────────────
+function _gtLeroyList() {
+  if (!_gtLeroyItems.length) return '<div class="gt-list-empty">Nenhum item Leroy Merlin encontrado.</div>';
+  const rows = _gtLeroyItems.map(r => {
+    const tipoCls = 'lm-badge-' + (r.tipo || '').toLowerCase().replace(/\s+/g, '-');
+    return `<tr>
+      <td><span class="lm-type-badge ${_gtEsc(tipoCls)}">${_gtEsc(r.tipo||'—')}</span></td>
+      <td>${_gtEsc(r.batente||'—')}</td>
+      <td>${_gtEsc(r.modelo||'—')}</td>
+      <td>${_gtEsc(r.local||'—')}</td>
+      <td>${_gtEsc(r.linha_cor||'—')}</td>
+      <td>${_gtEsc(r.largura_tipo||'—')}</td>
+      <td style="text-align:right">${_gtFmt(r.preco_leroy)}</td>
+      <td style="text-align:right;color:#16a34a;font-weight:600">${_gtFmt(r.preco_concrem)}</td>
+      <td class="gt-acoes">
+        <button class="gt-btn-del" onclick="gtExcluirLeroy('${_gtEsc(String(r.id))}')">Excluir</button>
+      </td>
+    </tr>`;
+  }).join('');
+  return `<div class="gt-table-wrap"><table class="gt-list-table">
+    <thead><tr>
+      <th>Tipo</th><th>Batente</th><th>Modelo</th><th>Local</th>
+      <th>Linha/Cor</th><th>Largura</th><th>Preço Leroy</th><th>Preço Concrem</th><th>Ações</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table></div>`;
+}
+
+async function gtAdicionarLeroy() {
+  const tipo    = document.getElementById('gt-lm-tipo')?.value?.trim();
+  const linha   = document.getElementById('gt-lm-linha')?.value?.trim();
+  const largura = document.getElementById('gt-lm-largura')?.value?.trim();
+  const erroEl  = document.getElementById('gt-lm-erro');
+
+  if (!tipo)    { _gtErro(erroEl, 'Informe o tipo.'); return; }
+  if (!linha)   { _gtErro(erroEl, 'Informe a linha/cor.'); return; }
+  if (!largura) { _gtErro(erroEl, 'Informe a largura.'); return; }
+  _gtErro(erroEl, '');
+
+  const payload = {
+    tipo,
+    batente:       document.getElementById('gt-lm-batente')?.value?.trim() || null,
+    modelo:        document.getElementById('gt-lm-modelo')?.value?.trim()  || null,
+    local:         document.getElementById('gt-lm-local')?.value?.trim()   || null,
+    linha_cor:     linha,
+    largura_tipo:  largura,
+    preco_leroy:   parseFloat(document.getElementById('gt-lm-leroy')?.value)   || 0,
+    preco_concrem: parseFloat(document.getElementById('gt-lm-concrem')?.value) || 0,
+    frete:         parseFloat(document.getElementById('gt-lm-frete')?.value)   || 0,
+    reajustar:     document.getElementById('gt-lm-reaj')?.checked || false,
+    ativo:         true,
+  };
+
+  if (DEMO_MODE || !_sb) {
+    _gtLeroyItems.unshift({ ...payload, id: 'demo-' + Date.now() });
+    _gtToast('Item adicionado! (modo demo)');
+    _gtLimparLeroyForm();
+    gtRenderList();
+    return;
+  }
+
+  try {
+    const { data, error } = await _sb.from('concremtp_leroy').insert(payload).select().single();
+    if (error) throw error;
+    _gtLeroyItems.unshift(data);
+    _gtToast('Item Leroy adicionado com sucesso!');
+    _gtLimparLeroyForm();
+    gtRenderList();
+  } catch (e) {
+    _gtErro(erroEl, 'Erro ao salvar: ' + (e.message || e));
+  }
+}
+
+function _gtLimparLeroyForm() {
+  ['gt-lm-tipo','gt-lm-batente','gt-lm-modelo','gt-lm-local',
+   'gt-lm-largura','gt-lm-linha','gt-lm-leroy','gt-lm-concrem','gt-lm-frete'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  const reaj = document.getElementById('gt-lm-reaj');
+  if (reaj) reaj.checked = false;
+}
+
+async function gtExcluirLeroy(id) {
+  if (!confirm('Excluir este item da tabela Leroy Merlin? Esta ação é irreversível.')) return;
+  if (!(DEMO_MODE || !_sb)) {
+    try {
+      const { error } = await _sb.from('concremtp_leroy').update({ ativo: false }).eq('id', id);
+      if (error) throw error;
+    } catch (e) { _gtToast('Erro ao excluir: ' + (e.message || e), true); return; }
+  }
+  _gtLeroyItems = _gtLeroyItems.filter(r => String(r.id) !== String(id));
+  _gtToast('Item excluído.');
+  gtRenderList();
+}
+
+function gtOpenLeroyFromShortcut(tipo) {
+  _gtLeroyPreTipo = tipo || null;
+  const navBtn = document.querySelector('.nav-item[data-section="gerenciarTabelas"]');
+  if (navBtn) navBtn.click();
 }
 
 // ── BOTÃO DE ATALHO ───────────────────────────────────────────────────────────

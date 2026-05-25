@@ -598,6 +598,7 @@ function toggleTheme() {
 
 // ── PRINT ───────────────────────────────────────────
 function printSection() {
+  if (currentSection === 'leroyMerlin') { lmImprimirTodos(); return; }
   const ch  = CHANNELS[currentChannel];
   const m   = ch.mult;
   const LOGO = new URL('Logos/logo-cores.png', window.location.href).href;
@@ -891,7 +892,7 @@ ${body}
 </div>
 </body></html>`;
 
-  const win = window.open('', '_blank');
+  const win = window.open('', '_blank', 'width=1200,height=800,menubar=no,toolbar=no,location=no,status=no');
   if (!win) { alert('Popup bloqueado. Permita popups para este site e tente novamente.'); return; }
   win.document.write(html);
   win.document.close();

@@ -23,8 +23,7 @@ function renderLeroyMerlin() {
     + '<div class="lm-spinner"></div>'
     + '<p class="lm-loading-text">Carregando tabela Leroy Merlin...</p>'
     + '</div>'
-    + '</div>'
-    + _lmModalHtml();
+    + '</div>';
 }
 
 // ── CARREGAR DADOS ────────────────────────────────────────────────────────────
@@ -96,9 +95,7 @@ function _lmRenderContainer(container) {
   var actionsHtml = '';
   if (!_lmEditMode) {
     actionsHtml = '<button class="lm-export-btn" onclick="lmExportarCSV()" title="Exportar CSV">'
-      + '<i class="ti ti-download"></i> CSV</button>'
-      + '<button class="lm-print-btn" onclick="lmImprimir()">'
-      + '<i class="ti ti-printer"></i> Imprimir PDF</button>';
+      + '<i class="ti ti-download"></i> CSV</button>';
   }
 
   container.innerHTML =
@@ -143,7 +140,7 @@ function _lmInjectButtons() {
       var addBtn = document.createElement('button');
       addBtn.className = 'lm-add-btn gt-shortcut-btn';
       addBtn.innerHTML = '<i class="ti ti-table-plus"></i> + Novo item';
-      addBtn.onclick = lmAbrirModalAdicionar;
+      addBtn.onclick = function() { gtOpenLeroyFromShortcut(_lmActiveTipo); };
       header.appendChild(addBtn);
     }
     if (canEdit) {
@@ -320,165 +317,85 @@ async function lmRemoverItem(id) {
   }
 }
 
-// ── MODAL: ADICIONAR ITEM ─────────────────────────────────────────────────────
-
-function _lmModalHtml() {
-  return '<div id="lm-modal-add" class="auth-modal-overlay" style="display:none">'
-    + '<div class="auth-modal" style="max-width:500px">'
-    + '<div class="auth-modal-header">'
-    + '<span>Novo item — Leroy Merlin</span>'
-    + '<button class="auth-modal-close" onclick="lmFecharModal()">✕</button>'
-    + '</div>'
-    + '<div class="auth-modal-body">'
-    + '<label class="form-label">Tipo'
-    + '<input id="lm-add-tipo" type="text" class="form-input" readonly></label>'
-    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'
-    + '<label class="form-label">Batente<input id="lm-add-batente" type="text" class="form-input" placeholder="ex: 12"></label>'
-    + '<label class="form-label">Modelo<input id="lm-add-modelo" type="text" class="form-input" placeholder="Lisa / Frisada"></label>'
-    + '<label class="form-label">Local<input id="lm-add-local" type="text" class="form-input" placeholder="CD / CROSS"></label>'
-    + '<label class="form-label">Largura<input id="lm-add-largura" type="text" class="form-input" placeholder="ex: 60 a 82"></label>'
-    + '</div>'
-    + '<label class="form-label">Linha / Cor<input id="lm-add-linha" type="text" class="form-input" placeholder="ex: AMADEIRADOS"></label>'
-    + '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">'
-    + '<label class="form-label">Preço Leroy (R$)<input id="lm-add-leroy" type="number" step="0.01" min="0" class="form-input" placeholder="0,00"></label>'
-    + '<label class="form-label">Preço Concrem (R$)<input id="lm-add-concrem" type="number" step="0.01" min="0" class="form-input" placeholder="0,00"></label>'
-    + '<label class="form-label">Frete (R$)<input id="lm-add-frete" type="number" step="0.01" min="0" class="form-input" placeholder="0,00"></label>'
-    + '</div>'
-    + '<label class="form-label" style="flex-direction:row;align-items:center;gap:8px;cursor:pointer">'
-    + '<input id="lm-add-reaj" type="checkbox"> Reajustar</label>'
-    + '<p id="lm-add-erro" class="form-error"></p>'
-    + '</div>'
-    + '<div class="auth-modal-footer">'
-    + '<button class="btn-cancelar" onclick="lmFecharModal()">Cancelar</button>'
-    + '<button class="btn-salvar" onclick="lmSalvarNovoItem()">Salvar</button>'
-    + '</div>'
-    + '</div>'
-    + '</div>';
-}
-
-function lmAbrirModalAdicionar() {
-  var m = document.getElementById('lm-modal-add');
-  if (!m) return;
-  document.getElementById('lm-add-tipo').value    = _lmActiveTipo;
-  document.getElementById('lm-add-batente').value = '';
-  document.getElementById('lm-add-modelo').value  = '';
-  document.getElementById('lm-add-local').value   = '';
-  document.getElementById('lm-add-largura').value = '';
-  document.getElementById('lm-add-linha').value   = '';
-  document.getElementById('lm-add-leroy').value   = '';
-  document.getElementById('lm-add-concrem').value = '';
-  document.getElementById('lm-add-frete').value   = '';
-  document.getElementById('lm-add-reaj').checked  = false;
-  document.getElementById('lm-add-erro').textContent = '';
-  m.style.display = 'flex';
-}
-
-function lmFecharModal() {
-  var m = document.getElementById('lm-modal-add');
-  if (m) m.style.display = 'none';
-}
-
-async function lmSalvarNovoItem() {
-  var tipo     = (document.getElementById('lm-add-tipo').value   || '').trim();
-  var linha    = (document.getElementById('lm-add-linha').value  || '').trim();
-  var largura  = (document.getElementById('lm-add-largura').value || '').trim();
-  var errEl    = document.getElementById('lm-add-erro');
-
-  if (!tipo || !linha || !largura) {
-    if (errEl) errEl.textContent = 'Tipo, Linha/Cor e Largura são obrigatórios.';
-    return;
-  }
-
-  var payload = {
-    tipo:          tipo,
-    batente:       (document.getElementById('lm-add-batente').value || '').trim() || null,
-    modelo:        (document.getElementById('lm-add-modelo').value  || '').trim() || null,
-    local:         (document.getElementById('lm-add-local').value   || '').trim() || null,
-    linha_cor:     linha,
-    largura_tipo:  largura,
-    preco_leroy:   parseFloat(document.getElementById('lm-add-leroy').value)   || 0,
-    preco_concrem: parseFloat(document.getElementById('lm-add-concrem').value) || 0,
-    frete:         parseFloat(document.getElementById('lm-add-frete').value)   || 0,
-    reajustar:     document.getElementById('lm-add-reaj').checked,
-    ativo:         true,
-  };
-
-  var btn = document.querySelector('#lm-modal-add .btn-salvar');
-  if (btn) { btn.disabled = true; btn.textContent = 'Salvando…'; }
-  if (errEl) errEl.textContent = '';
-
-  try {
-    var res = await _sb.from('concremtp_leroy').insert(payload);
-    if (res.error) throw res.error;
-    lmFecharModal();
-    _lmActiveTipo = tipo;
-    await carregarLeroyMerlin();
-  } catch(e) {
-    if (errEl) errEl.textContent = 'Erro: ' + (e.message || e);
-    if (btn) { btn.disabled = false; btn.textContent = 'Salvar'; }
-  }
-}
-
 // ── IMPRESSÃO ─────────────────────────────────────────────────────────────────
 
-function lmImprimir() {
-  var tipoData = _lmData.filter(function(r) { return r.tipo === _lmActiveTipo; });
-  var rows = _lmFiltrar(tipoData);
-  if (!rows.length) { alert('Nenhum dado para imprimir.'); return; }
+function lmImprimirTodos() {
+  if (!_lmData || !_lmData.length) { alert('Nenhum dado para imprimir.'); return; }
 
   var LOGO    = new URL('Logos/logo-cores.png', window.location.href).href;
   var dateStr = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
 
-  var THEAD = '<thead><tr>'
-    + '<th>BATENTE</th><th>MODELO</th><th>LOCAL</th>'
-    + '<th>LINHA/COR</th><th>LARGURA</th>'
-    + '<th>PREÇO LEROY</th><th>PREÇO CONCREM</th><th>FRETE</th>'
-    + '</tr></thead>';
+  function pF(v) {
+    var n = parseFloat(v);
+    if (isNaN(n)) return '—';
+    return n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  }
 
-  var trs = rows.map(function(r, i) {
-    var precoConcrem = parseFloat(r.preco_concrem) || 0;
-    if (typeof rjGetM === 'function') precoConcrem *= rjGetM('Leroy Merlin', 'leroy', r.linha_cor);
-    var zebra = i % 2 !== 0 ? 'background:#f5f5f5;' : '';
-    return '<tr>'
-      + '<td style="' + zebra + '">' + _lmEsc(r.batente     || '—') + '</td>'
-      + '<td style="' + zebra + '">' + _lmEsc(r.modelo      || '—') + '</td>'
-      + '<td style="' + zebra + '">' + _lmEsc(r.local       || '—') + '</td>'
-      + '<td style="' + zebra + '">' + _lmEsc(r.linha_cor   || '—') + '</td>'
-      + '<td style="' + zebra + '">' + _lmEsc(r.largura_tipo || '—') + '</td>'
-      + '<td style="text-align:right;' + zebra + '">' + _lmFmt(r.preco_leroy) + '</td>'
-      + '<td style="text-align:right;font-weight:bold;color:#1a5c2a;' + zebra + '">' + _lmFmt(precoConcrem) + '</td>'
-      + '<td style="text-align:right;' + zebra + '">' + _lmFmt(r.frete) + '</td>'
-      + '</tr>';
-  }).join('');
+  var tipos = _lmUniq(_lmData.map(function(r) { return r.tipo; }));
+
+  var body = '';
+  tipos.forEach(function(tipo, idx) {
+    var rows = _lmData.filter(function(r) { return r.tipo === tipo; });
+
+    var trs = rows.map(function(r, i) {
+      var precoConcrem = parseFloat(r.preco_concrem) || 0;
+      if (typeof rjGetM === 'function') precoConcrem *= rjGetM('Leroy Merlin', 'leroy', r.linha_cor);
+      var zebra = i % 2 !== 0 ? 'background:#f5f5f5;' : '';
+      return '<tr>'
+        + '<td style="' + zebra + '">' + _lmEsc(r.batente      || '—') + '</td>'
+        + '<td style="' + zebra + '">' + _lmEsc(r.modelo       || '—') + '</td>'
+        + '<td style="' + zebra + '">' + _lmEsc(r.local        || '—') + '</td>'
+        + '<td style="' + zebra + '">' + _lmEsc(r.linha_cor    || '—') + '</td>'
+        + '<td style="' + zebra + '">' + _lmEsc(r.largura_tipo || '—') + '</td>'
+        + '<td style="text-align:right;' + zebra + '">' + pF(r.preco_leroy) + '</td>'
+        + '<td style="text-align:right;font-weight:bold;color:#1a5c2a;' + zebra + '">' + pF(precoConcrem) + '</td>'
+        + '<td style="text-align:right;' + zebra + '">' + pF(r.frete) + '</td>'
+        + '</tr>';
+    }).join('');
+
+    body += '<div class="pblk" style="page-break-inside:avoid;break-inside:avoid">'
+      + '<div class="psep">LEROY MERLIN — ' + _lmEsc(tipo.toUpperCase()) + '</div>'
+      + '<table class="ppt"><thead><tr>'
+      + '<th>BATENTE</th><th>MODELO</th><th>LOCAL</th>'
+      + '<th>LINHA/COR</th><th>LARGURA</th>'
+      + '<th>PREÇO LEROY</th><th>PREÇO CONCREM</th><th>FRETE</th>'
+      + '</tr></thead>'
+      + '<tbody>' + trs + '</tbody>'
+      + '</table></div>';
+  });
 
   var html = '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">'
-    + '<title>Leroy Merlin — ' + _lmEsc(_lmActiveTipo) + ' — CONCREM</title>'
+    + '<title>Leroy Merlin — CONCREM</title>'
     + '<style>'
     + '* { margin:0; padding:0; box-sizing:border-box; }'
-    + '@page { size:A4 landscape; margin:0; }'
-    + 'body { font-family:Arial,sans-serif; font-size:9px; color:#1a1a1a; background:#fff; padding:8mm 10mm; }'
-    + '.phdr { width:100%; margin-bottom:8px; }'
+    + '@page { size:A4 portrait; margin:8mm 10mm; }'
+    + 'body { font-family:Arial,sans-serif; font-size:9px; color:#1a1a1a; background:#fff; }'
+    + 'table { border-collapse:collapse; }'
+    + '.phdr { width:100%; margin-bottom:7px; }'
     + '.phdr td { padding:0 6px 5px; border-bottom:2.5px solid #1a5c2a; vertical-align:middle; }'
     + '.phdr-logo { width:90px; } .phdr-logo img { height:30px; }'
     + '.phdr-title { text-align:center; font-size:13px; font-weight:bold; text-transform:uppercase; }'
     + '.phdr-chan { text-align:right; font-size:11px; font-weight:bold; color:#1a5c2a; text-transform:uppercase; white-space:nowrap; }'
-    + '.ppt { border-collapse:collapse; width:100%; }'
-    + '.ppt th { background:#2c3e50; color:#fff; font-size:8px; padding:3px 5px; text-align:center; border:0.5px solid #444; -webkit-print-color-adjust:exact; print-color-adjust:exact; }'
-    + '.ppt td { border:0.5px solid #ccc; padding:2px 5px; font-size:8px; vertical-align:middle; }'
+    + '.psep { background:#1a252f; color:#fff; font-size:9.5px; font-weight:bold; text-align:center; padding:3px 8px; margin:7px 0 3px; page-break-after:avoid; break-after:avoid; -webkit-print-color-adjust:exact; print-color-adjust:exact; }'
+    + '.ppt { border-collapse:collapse; width:100%; margin-bottom:3px; }'
+    + '.ppt th { background:#2c3e50; color:#fff; padding:2px 5px; text-align:center; font-size:8px; border:0.5px solid #444; -webkit-print-color-adjust:exact; print-color-adjust:exact; }'
+    + '.ppt td { border:0.5px solid #ccc; padding:2px 4px; font-size:8px; vertical-align:middle; }'
+    + '.pgbreak { page-break-before:always; break-before:page; }'
+    + '.pblk { margin-bottom:6px; }'
     + '.pftr { margin-top:8px; border-top:1px solid #ccc; padding-top:4px; text-align:center; }'
     + '.pftr img { height:18px; opacity:.5; }'
     + '.pftr-date { font-size:7px; color:#888; margin-top:2px; }'
     + '</style></head><body>'
     + '<table class="phdr" width="100%"><tr>'
     + '<td class="phdr-logo"><img src="' + LOGO + '" alt="CONCREM"></td>'
-    + '<td class="phdr-title">LEROY MERLIN — ' + _lmEsc(_lmActiveTipo.toUpperCase()) + ' — PREÇOS CIF</td>'
+    + '<td class="phdr-title">LEROY MERLIN — TABELA DE PREÇOS CIF</td>'
     + '<td class="phdr-chan">Canal Exclusivo</td>'
     + '</tr></table>'
-    + '<table class="ppt">' + THEAD + '<tbody>' + trs + '</tbody></table>'
+    + body
     + '<div class="pftr"><img src="' + LOGO + '" alt="CONCREM"><div class="pftr-date">' + dateStr + '</div></div>'
     + '</body></html>';
 
-  var w = window.open('', '_blank', 'width=1100,height=700');
+  var w = window.open('', '_blank', 'width=1200,height=700');
   if (!w) { alert('Popup bloqueado. Permita popups para este site.'); return; }
   w.document.write(html);
   w.document.close();

@@ -378,6 +378,7 @@ function renderAplicarReajuste() {
           <label class="rj-label" for="rj-produto">Produto</label>
           <select class="rj-select" id="rj-produto" onchange="rjOnProdutoOrCanal()">
             <option value="">Selecione o produto...</option>
+            <option value="___todos" class="rj-opt-todos">— Todos os produtos —</option>
             <option value="Portas LACCA">Portas LACCA</option>
             <option value="Portas UV Melamínico">Portas UV Melamínico</option>
             <option value="Batente &amp; Alizar LACCA">Batente &amp; Alizar LACCA</option>
@@ -394,6 +395,7 @@ function renderAplicarReajuste() {
           <label class="rj-label" for="rj-canal">Canal</label>
           <select class="rj-select" id="rj-canal" onchange="rjOnProdutoOrCanal()">
             <option value="">Selecione o canal...</option>
+            <option value="___todos" class="rj-opt-todos">— Todos os canais —</option>
             <option value="fabrica">Fábrica</option>
             <option value="distribuidora">Distribuidora</option>
             <option value="dag">DAG</option>
@@ -452,6 +454,20 @@ function renderAplicarReajuste() {
 // 9. Formulário
 const RJ_CANAL_LABELS = { fabrica: 'Fábrica', distribuidora: 'Distribuidora', dag: 'DAG', elo: 'ELO', leroy: 'Leroy Merlin' };
 
+// Mapeamento produto → canais válidos (usado quando "___todos" é selecionado)
+const RJ_PRODUTO_CANAIS = {
+  'Portas LACCA':                ['fabrica', 'distribuidora', 'dag'],
+  'Portas UV Melamínico':        ['fabrica', 'distribuidora', 'dag'],
+  'Batente & Alizar LACCA':      ['fabrica', 'distribuidora', 'dag'],
+  'Batente & Alizar Melamínico': ['fabrica', 'distribuidora', 'dag'],
+  'Rodapé LACCA':                ['fabrica', 'distribuidora', 'dag'],
+  'Rodapé Melamínico':           ['fabrica', 'distribuidora', 'dag'],
+  'Portas ELO':                  ['elo'],
+  'Batente & Alizar ELO':        ['elo'],
+  'Leroy Merlin':                ['leroy'],
+};
+const RJ_TODOS_PRODUTOS = Object.keys(RJ_PRODUTO_CANAIS);
+
 function rjResetForm() {
   ['rj-produto','rj-canal','rj-pct','rj-motivo'].forEach(id => {
     const el = document.getElementById(id);
@@ -467,15 +483,34 @@ function rjResetForm() {
 
 function rjOnProdutoOrCanal() {
   const produto = document.getElementById('rj-produto').value;
-  // Leroy Merlin tem canal fixo — selecionar automaticamente
-  if (produto === 'Leroy Merlin') {
+  // "Todos os produtos" força "Todos os canais"
+  if (produto === '___todos') {
+    document.getElementById('rj-canal').value = '___todos';
+  }
+  // Leroy Merlin tem canal fixo
+  else if (produto === 'Leroy Merlin') {
     document.getElementById('rj-canal').value = 'leroy';
   }
   const canal   = document.getElementById('rj-canal').value;
   const linhaEl = document.getElementById('rj-linha');
   linhaEl.innerHTML = '';
   linhaEl.disabled = true;
-  if (produto && canal) {
+
+  if (produto === '___todos' || canal === '___todos') {
+    // Quando "todos" em qualquer dimensão, linha só pode ser "Todas"
+    if (produto && canal) {
+      const opt = document.createElement('option');
+      opt.value = '___all';
+      opt.textContent = '— Todas as linhas —';
+      linhaEl.appendChild(opt);
+      linhaEl.disabled = false;
+    } else {
+      const ph = document.createElement('option');
+      ph.value = '';
+      ph.textContent = 'Selecione produto e canal primeiro...';
+      linhaEl.appendChild(ph);
+    }
+  } else if (produto && canal) {
     const placeholder = document.createElement('option');
     placeholder.value = '';
     placeholder.textContent = 'Selecione a linha...';
@@ -507,29 +542,40 @@ function rjOnFormChange() {
   const baseInfo = document.getElementById('rj-base-info');
 
   if (produto && canal && linha && pctRaw !== '' && !isNaN(pct)) {
-    const sign       = pct >= 0 ? '+' : '';
-    const linhaLabel = linha === '___all' ? 'todas as linhas' : `"${linha}"`;
+    const sign        = pct >= 0 ? '+' : '';
+    const isTodosProd = produto === '___todos';
+    const isTodosCan  = canal   === '___todos';
+    const linhaLabel  = linha === '___all' ? 'todas as linhas' : `"${linha}"`;
+    const prodLabel   = isTodosProd ? 'todos os produtos' : produto;
+    const canalLabel  = isTodosCan  ? 'todos os canais'   : (RJ_CANAL_LABELS[canal] || canal);
     document.getElementById('rj-preview-text').textContent =
-      `Aplicar ${sign}${pct.toFixed(2).replace('.', ',')}% em ${produto} — ${RJ_CANAL_LABELS[canal] || canal} — ${linhaLabel}`;
+      `Aplicar ${sign}${pct.toFixed(2).replace('.', ',')}% em ${prodLabel} — ${canalLabel} — ${linhaLabel}`;
     preview.style.display = '';
-    const sample = rjSamplePrice(produto, canal, linha);
-    if (sample > 0) {
-      const afterPrice = sample * (1 + pct / 100);
-      const isAll = linha === '___all';
-      const lineCount = isAll ? rjGetLinhas(produto, canal).length - 1 : null; // -1 to exclude ___all itself
-      const baseLbl = document.getElementById('rj-base-lbl');
-      if (baseLbl) baseLbl.textContent = isAll
-        ? `Referência — 1.ª linha (${lineCount} linhas serão ajustadas):`
-        : 'Preço base atual (1.ª linha):';
-      document.getElementById('rj-base-val').textContent  = fmt(sample);
-      document.getElementById('rj-after-val').textContent = fmt(afterPrice);
-      const afterEl = document.getElementById('rj-after-val');
-      afterEl.style.color = pct >= 0 ? '#16a34a' : '#dc2626';
-      baseInfo.style.display = '';
-    } else {
+
+    if (isTodosProd || isTodosCan) {
+      // Não exibe preço base individual para seleção de "todos"
       baseInfo.style.display = 'none';
+      _rjUpdateLivePanel(produto, canal, linha, pct);
+    } else {
+      const sample = rjSamplePrice(produto, canal, linha);
+      if (sample > 0) {
+        const afterPrice = sample * (1 + pct / 100);
+        const isAll = linha === '___all';
+        const lineCount = isAll ? rjGetLinhas(produto, canal).length - 1 : null;
+        const baseLbl = document.getElementById('rj-base-lbl');
+        if (baseLbl) baseLbl.textContent = isAll
+          ? `Referência — 1.ª linha (${lineCount} linhas serão ajustadas):`
+          : 'Preço base atual (1.ª linha):';
+        document.getElementById('rj-base-val').textContent  = fmt(sample);
+        document.getElementById('rj-after-val').textContent = fmt(+(sample * (1 + pct / 100)).toFixed(2));
+        const afterEl = document.getElementById('rj-after-val');
+        afterEl.style.color = pct >= 0 ? '#16a34a' : '#dc2626';
+        baseInfo.style.display = '';
+      } else {
+        baseInfo.style.display = 'none';
+      }
+      _rjUpdateLivePanel(produto, canal, linha, pct);
     }
-    _rjUpdateLivePanel(produto, canal, linha, pct);
   } else {
     preview.style.display = 'none';
     baseInfo.style.display = 'none';
@@ -551,13 +597,46 @@ function _rjUpdateLivePanel(produto, canal, linha, pct) {
   }
   empty.style.display = 'none'; content.style.display = '';
 
-  const sign    = pct >= 0 ? '+' : '';
-  const isAll   = linha === '___all';
-  const canal_l = RJ_CANAL_LABELS[canal] || canal;
-  const linhaL  = isAll ? 'Todas as linhas' : linha;
-  const color   = pct >= 0 ? '#16a34a' : '#dc2626';
-  const bgColor = pct >= 0 ? '#f0fdf4' : '#fef2f2';
-  const bdColor = pct >= 0 ? '#bbf7d0' : '#fecaca';
+  const sign       = pct >= 0 ? '+' : '';
+  const isTodosPrd = produto === '___todos';
+  const isTodosCan = canal   === '___todos';
+  const isAll      = linha   === '___all';
+  const canal_l    = isTodosCan ? 'Todos os canais' : (RJ_CANAL_LABELS[canal] || canal);
+  const linhaL     = isAll ? 'Todas as linhas' : linha;
+  const color      = pct >= 0 ? '#16a34a' : '#dc2626';
+  const bgColor    = pct >= 0 ? '#f0fdf4' : '#fef2f2';
+  const bdColor    = pct >= 0 ? '#bbf7d0' : '#fecaca';
+
+  // Painel resumo para seleção de "todos"
+  if (isTodosPrd || isTodosCan) {
+    const produtosList = isTodosPrd ? RJ_TODOS_PRODUTOS : [produto];
+    const combos = [];
+    for (const p of produtosList) {
+      const canais = isTodosCan ? RJ_PRODUTO_CANAIS[p] : [canal];
+      for (const c of canais) combos.push({ p, c });
+    }
+    const prodLabel = isTodosPrd ? 'Todos os produtos' : produto;
+    document.getElementById('rj-live-hdr').innerHTML = `
+      <div class="rj-lh-top">
+        <div class="rj-lh-badge" style="background:${bgColor};border-color:${bdColor};color:${color}">
+          ${sign}${pct.toFixed(2).replace('.', ',')}%
+        </div>
+        <div class="rj-lh-info">
+          <div class="rj-lh-prod">${prodLabel}</div>
+          <div class="rj-lh-meta">${canal_l} · Todas as linhas</div>
+        </div>
+      </div>
+      <div class="rj-lh-desc">Reajuste será aplicado em ${combos.length} combinação(ões) de produto + canal.</div>`;
+    const rows = document.getElementById('rj-live-rows');
+    rows.innerHTML = combos.map(({ p, c }) => `
+      <div class="rj-lv-row">
+        <span class="rj-lv-name" style="flex:1">${p}</span>
+        <span style="font-size:11px;color:#6b7280;margin-right:8px">${RJ_CANAL_LABELS[c] || c}</span>
+        <span class="rj-lv-arrow">→</span>
+        <span class="rj-lv-depois" style="color:${color}">${sign}${pct.toFixed(2).replace('.', ',')}%</span>
+      </div>`).join('');
+    return;
+  }
 
   // Header do painel
   document.getElementById('rj-live-hdr').innerHTML = `
@@ -694,13 +773,70 @@ function rjApply() {
   const motivo  = document.getElementById('rj-motivo').value.trim();
   if (!produto || !canal || !linha || isNaN(pct) || motivo.length === 0) return;
 
+  const isTodosPrd = produto === '___todos';
+  const isTodosCan = canal   === '___todos';
+
+  // Modo "todos": itera todas as combinações produto+canal e aplica a "___all"
+  if (isTodosPrd || isTodosCan) {
+    const produtosList = isTodosPrd ? RJ_TODOS_PRODUTOS : [produto];
+    const d = rjLoad();
+    const now = Date.now();
+    for (const p of produtosList) {
+      const canais = isTodosCan ? RJ_PRODUTO_CANAIS[p] : [canal];
+      for (const c of canais) {
+        const key      = `${p}_${c}___all`;
+        const prevMult = d.precosAtuais[key]?.mult ?? 1;
+        const newMult  = prevMult * (1 + pct / 100);
+        const sample   = rjSamplePrice(p, c, '___all');
+        const entry = {
+          id:          `${now}_${p}_${c}`,
+          produto: p, canal: c, linha: '___all',
+          porcentagem: pct, motivo,
+          dataHora:    new Date().toISOString(),
+          precosAntes: { mult: prevMult },
+          sampleAntes: sample,
+        };
+        d.historico.push(entry);
+        d.precosAtuais[key] = { mult: newMult };
+        if (typeof DEMO_MODE !== 'undefined' && !DEMO_MODE) {
+          _rjSbInsertReajuste(entry);
+          _rjSbUpsertPreco(key, newMult);
+        }
+      }
+    }
+    rjSave(d);
+    rjApplyToMemory();
+    rjUpdateBadge();
+
+    const btn = document.getElementById('rj-apply-btn');
+    if (btn) {
+      btn.textContent = '✓ Reajuste aplicado!';
+      btn.style.background = '#15803d';
+      btn.disabled = true;
+      setTimeout(() => {
+        ['rj-produto','rj-canal','rj-pct','rj-motivo'].forEach(id => {
+          const el = document.getElementById(id); if (el) el.value = '';
+        });
+        const linhaEl = document.getElementById('rj-linha');
+        if (linhaEl) { linhaEl.innerHTML = '<option value="">Selecione produto e canal primeiro...</option>'; linhaEl.disabled = true; }
+        const preview  = document.getElementById('rj-preview');  if (preview)  preview.style.display  = 'none';
+        const baseInfo = document.getElementById('rj-base-info'); if (baseInfo) baseInfo.style.display = 'none';
+        btn.textContent = 'Aplicar Reajuste';
+        btn.style.background = '';
+        btn.disabled = true;
+        _rjUpdateLivePanel(null);
+      }, 2000);
+    }
+    return;
+  }
+
+  // Modo normal: produto e canal específicos
   const d        = rjLoad();
   const key      = `${produto}_${canal}___${linha === '___all' ? 'all' : linha}`;
   const prevMult = d.precosAtuais[key]?.mult ?? 1;
   const newMult  = prevMult * (1 + pct / 100);
   const sample   = rjSamplePrice(produto, canal, linha);
 
-  // Se for "Todas as linhas", captura todas as linhas com seu grupo/coleção
   let linhasSnapshot = null;
   if (linha === '___all') {
     linhasSnapshot = _rjCaptureAllLinhas(produto, canal, pct);
