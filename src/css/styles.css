@@ -1469,12 +1469,21 @@
     position: fixed; inset: 0; z-index: 3000;
     background: #fff;
     display: flex; flex-direction: column;
-    align-items: center; justify-content: center; gap: 24px;
+    align-items: center; justify-content: center; gap: 28px;
+  }
+  .auth-loading-logo {
+    width: 120px; height: 120px;
+    object-fit: contain;
+    animation: auth-logo-pulse 1.8s ease-in-out infinite;
+  }
+  @keyframes auth-logo-pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%       { opacity: .7; transform: scale(.95); }
   }
   .auth-loading-spinner {
-    width: 32px; height: 32px;
+    width: 36px; height: 36px;
     border: 3px solid #e2e8f0;
-    border-top-color: #1a2b4a;
+    border-top-color: #2d5a27;
     border-radius: 50%;
     animation: auth-spin .8s linear infinite;
   }
