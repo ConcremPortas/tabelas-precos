@@ -217,7 +217,7 @@ function lmImprimir() {
         + '</tr>';
     }).join('');
 
-    var pb = idx > 0 ? 'page-break-before:always;' : '';
+    var pb = idx > 0 ? 'margin-top:14px;' : '';
     return '<div style="' + pb + '">'
       + '<div class="tipo-hdr">' + _lmEsc(tipo.toUpperCase()) + ' <span class="tipo-count">(' + tipoRows.length + ' itens)</span></div>'
       + '<table>' + THEAD + '<tbody>' + trs + '</tbody></table>'
@@ -227,8 +227,8 @@ function lmImprimir() {
   var html = '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">'
     + '<title>Leroy Merlin — CONCREM</title>'
     + '<style>'
-    + '@page{size:landscape;margin:10mm}'
-    + 'body{font-family:Arial,sans-serif;font-size:9px;color:#222;margin:0;padding:0}'
+    + '@page{size:landscape;margin:0}'
+    + 'body{font-family:Arial,sans-serif;font-size:9px;color:#222;margin:0;padding:10mm}'
     + '.ph{display:flex;align-items:center;gap:12px;border-bottom:2px solid #1a5c2a;padding-bottom:6px;margin-bottom:12px}'
     + '.ph img{height:34px}'
     + '.ph-badge{display:inline-block;background:#1a5c2a;color:#fff;font-size:8px;font-weight:bold;padding:2px 8px;border-radius:10px;-webkit-print-color-adjust:exact;print-color-adjust:exact}'
