@@ -465,9 +465,6 @@ const MGMT_SECTIONS = new Set(['aplicarReajuste', 'historicoReajustes', 'usuario
 
 function render() {
   const content = document.getElementById('content');
-  content.className = 'page-content';
-  void content.offsetWidth;
-  content.className = 'page-content';
   content.innerHTML = buildBreadcrumb() + renderTable(currentSection);
   applySearch();
   if (typeof onAfterRender === 'function') onAfterRender(currentSection);
