@@ -1,7 +1,7 @@
 // ── LEROY MERLIN ─────────────────────────────────────────────────────────────
 
 var _lmData         = [];
-var _lmFiltroTipo   = '';
+var _lmActiveTipo   = '';   // controlado pelas abas
 var _lmFiltroModelo = '';
 var _lmFiltroLocal  = '';
 var _lmFiltroLinha  = '';
@@ -9,20 +9,19 @@ var _lmFiltroLinha  = '';
 // ── RENDER ESQUELETO (chamado sincronamente por render()) ─────────────────────
 
 function renderLeroyMerlin() {
-  return `
-    <div class="page-header">
-      <div class="page-title">Tabela Leroy Merlin</div>
-      <div class="page-meta">
-        <span class="meta-pill">Canal Exclusivo · Preços CIF</span>
-        Atualizado em fev/2026
-      </div>
-    </div>
-    <div id="lm-content">
-      <div class="lm-loading">
-        <div class="lm-spinner"></div>
-        <p class="lm-loading-text">Carregando tabela Leroy Merlin...</p>
-      </div>
-    </div>`;
+  return '<div class="page-header">'
+    + '<div class="page-title">Tabela Leroy Merlin</div>'
+    + '<div class="page-meta">'
+    + '<span class="meta-pill">Canal Exclusivo · Preços CIF</span>'
+    + ' Atualizado em fev/2026'
+    + '</div>'
+    + '</div>'
+    + '<div id="lm-content">'
+    + '<div class="lm-loading">'
+    + '<div class="lm-spinner"></div>'
+    + '<p class="lm-loading-text">Carregando tabela Leroy Merlin...</p>'
+    + '</div>'
+    + '</div>';
 }
 
 // ── CARREGAR DADOS DO SUPABASE ────────────────────────────────────────────────
@@ -42,45 +41,63 @@ async function carregarLeroyMerlin() {
     .order('largura_tipo');
 
   if (res.error || !res.data || res.data.length === 0) {
-    container.innerHTML = `
-      <div class="empty-state">
-        <div class="empty-icon"><i class="ti ti-package-off"></i></div>
-        <p class="empty-text">Nenhum produto encontrado.</p>
-      </div>`;
+    container.innerHTML = '<div class="empty-state">'
+      + '<div class="empty-icon"><i class="ti ti-package-off"></i></div>'
+      + '<p class="empty-text">Nenhum produto encontrado.</p>'
+      + '</div>';
     return;
   }
 
   _lmData         = res.data;
-  _lmFiltroTipo   = '';
+  _lmActiveTipo   = '';   // _lmRenderContainer define o primeiro tipo
   _lmFiltroModelo = '';
   _lmFiltroLocal  = '';
   _lmFiltroLinha  = '';
 
-  _lmRenderContainer(container, _lmData);
+  _lmRenderContainer(container);
 }
 
-// ── MONTAR CONTAINER COM FILTROS + TABELA ─────────────────────────────────────
+// ── MONTAR CONTAINER: ABAS + FILTROS + TABELA ─────────────────────────────────
 
-function _lmRenderContainer(container, data) {
-  var uniq = function(arr) { return arr.filter(function(v, i, a) { return v && a.indexOf(v) === i; }).sort(); };
-  var tipos   = uniq(_lmData.map(function(r) { return r.tipo; }));
-  var modelos = uniq(_lmData.map(function(r) { return r.modelo; }));
-  var locais  = uniq(_lmData.map(function(r) { return r.local; }));
-  var linhas  = uniq(_lmData.map(function(r) { return r.linha_cor; }));
+function _lmRenderContainer(container) {
+  var tipos = _lmUniq(_lmData.map(function(r) { return r.tipo; }));
+
+  // Garante que a aba ativa é válida
+  if (!_lmActiveTipo || tipos.indexOf(_lmActiveTipo) === -1) {
+    _lmActiveTipo = tipos[0] || '';
+  }
+
+  // Dados do tipo ativo
+  var tipoData = _lmData.filter(function(r) { return r.tipo === _lmActiveTipo; });
+
+  // Opções de filtro baseadas apenas no tipo ativo
+  var modelos = _lmUniq(tipoData.map(function(r) { return r.modelo; }));
+  var locais  = _lmUniq(tipoData.map(function(r) { return r.local; }));
+  var linhas  = _lmUniq(tipoData.map(function(r) { return r.linha_cor; }));
+
+  // Barra de abas (igual ao padrão do Rodapé)
+  var tabBar = '<div class="inner-tabs-bar">'
+    + tipos.map(function(t) {
+        var active = _lmActiveTipo === t ? ' active' : '';
+        return '<button class="inner-tab' + active + '" onclick="lmSetTipo(\'' + _lmEsc(t) + '\')">'
+          + _lmEsc(t) + '</button>';
+      }).join('')
+    + '</div>';
 
   function sel(campo, opts, current, label) {
     return '<select class="lm-select" onchange="lmSetFiltro(\'' + campo + '\', this.value)">'
       + '<option value="">' + label + '</option>'
       + opts.map(function(v) {
-          return '<option value="' + _lmEsc(v) + '"' + (v === current ? ' selected' : '') + '>' + _lmEsc(v) + '</option>';
+          return '<option value="' + _lmEsc(v) + '"' + (v === current ? ' selected' : '') + '>'
+            + _lmEsc(v) + '</option>';
         }).join('')
       + '</select>';
   }
 
   container.innerHTML =
-    '<div class="lm-toolbar">'
+    tabBar
+    + '<div class="lm-toolbar">'
     + '<div class="lm-filters">'
-    + sel('tipo',   tipos,   _lmFiltroTipo,   'Todos os tipos')
     + sel('modelo', modelos, _lmFiltroModelo, 'Todos os modelos')
     + sel('local',  locais,  _lmFiltroLocal,  'Todos os locais')
     + sel('linha',  linhas,  _lmFiltroLinha,  'Todas as linhas')
@@ -93,17 +110,27 @@ function _lmRenderContainer(container, data) {
     + '</div>'
     + '</div>'
     + '<div class="table-card"><div class="table-wrap" id="lm-table-wrap">'
-    + _lmRenderTabela(_lmFiltrar(_lmData))
+    + _lmRenderTabela(_lmFiltrar(tipoData))
     + '</div></div>';
 
   if (typeof applySearch === 'function') applySearch();
 }
 
-// ── FILTRAR ───────────────────────────────────────────────────────────────────
+// ── MUDAR ABA DE TIPO ─────────────────────────────────────────────────────────
+
+function lmSetTipo(tipo) {
+  _lmActiveTipo   = tipo;
+  _lmFiltroModelo = '';
+  _lmFiltroLocal  = '';
+  _lmFiltroLinha  = '';
+  var container = document.getElementById('lm-content');
+  if (container) _lmRenderContainer(container);
+}
+
+// ── FILTROS SECUNDÁRIOS ───────────────────────────────────────────────────────
 
 function _lmFiltrar(rows) {
   return rows.filter(function(r) {
-    if (_lmFiltroTipo   && r.tipo      !== _lmFiltroTipo)   return false;
     if (_lmFiltroModelo && r.modelo    !== _lmFiltroModelo) return false;
     if (_lmFiltroLocal  && r.local     !== _lmFiltroLocal)  return false;
     if (_lmFiltroLinha  && r.linha_cor !== _lmFiltroLinha)  return false;
@@ -112,13 +139,13 @@ function _lmFiltrar(rows) {
 }
 
 function lmSetFiltro(campo, valor) {
-  if (campo === 'tipo')   _lmFiltroTipo   = valor;
   if (campo === 'modelo') _lmFiltroModelo = valor;
   if (campo === 'local')  _lmFiltroLocal  = valor;
   if (campo === 'linha')  _lmFiltroLinha  = valor;
+  var tipoData = _lmData.filter(function(r) { return r.tipo === _lmActiveTipo; });
   var wrap = document.getElementById('lm-table-wrap');
   if (wrap) {
-    wrap.innerHTML = _lmRenderTabela(_lmFiltrar(_lmData));
+    wrap.innerHTML = _lmRenderTabela(_lmFiltrar(tipoData));
     if (typeof applySearch === 'function') applySearch();
   }
 }
@@ -139,36 +166,31 @@ function _lmRenderTabela(rows) {
   }
 
   var trs = rows.map(function(r, i) {
-    var tipoUpper = String(r.tipo || '').toUpperCase();
-    var tipoCls   = _LM_TIPO_CLS[tipoUpper] || 'lm-badge-alizar';
-    var reajCls   = r.reajustar ? 'lm-badge-sim' : 'lm-badge-nao';
-    var reajTxt   = r.reajustar ? 'Sim' : 'Não';
-    var zebra     = i % 2 !== 0 ? ' lm-zebra' : '';
+    var reajCls = r.reajustar ? 'lm-badge-sim' : 'lm-badge-nao';
+    var reajTxt = r.reajustar ? 'Sim' : 'Não';
+    var zebra   = i % 2 !== 0 ? ' lm-zebra' : '';
 
-    // Aplica multiplicador de reajuste ao preço CONCREM (se houver reajuste ativo)
     var precoConcrem = parseFloat(r.preco_concrem) || 0;
     if (typeof rjGetM === 'function') {
-      var rjM = rjGetM('Leroy Merlin', 'leroy', r.linha_cor);
-      precoConcrem = precoConcrem * rjM;
+      precoConcrem = precoConcrem * rjGetM('Leroy Merlin', 'leroy', r.linha_cor);
     }
 
     return '<tr class="lm-row' + zebra + '">'
-      + '<td><span class="lm-type-badge ' + tipoCls + '">' + _lmEsc(r.tipo || '') + '</span></td>'
-      + '<td>' + _lmEsc(r.batente    || '—') + '</td>'
-      + '<td>' + _lmEsc(r.modelo     || '—') + '</td>'
-      + '<td>' + _lmEsc(r.local      || '—') + '</td>'
-      + '<td>' + _lmEsc(r.linha_cor  || '—') + '</td>'
+      + '<td>' + _lmEsc(r.batente     || '—') + '</td>'
+      + '<td>' + _lmEsc(r.modelo      || '—') + '</td>'
+      + '<td>' + _lmEsc(r.local       || '—') + '</td>'
+      + '<td>' + _lmEsc(r.linha_cor   || '—') + '</td>'
       + '<td>' + _lmEsc(r.largura_tipo || '—') + '</td>'
-      + '<td class="lm-price">' + _lmFmt(r.preco_leroy) + '</td>'
-      + '<td class="lm-price-concrem">' + _lmFmt(precoConcrem) + '</td>'
-      + '<td class="lm-price">' + _lmFmt(r.frete) + '</td>'
+      + '<td class="lm-price">'        + _lmFmt(r.preco_leroy)  + '</td>'
+      + '<td class="lm-price-concrem">' + _lmFmt(precoConcrem)  + '</td>'
+      + '<td class="lm-price">'        + _lmFmt(r.frete)        + '</td>'
       + '<td><span class="lm-reaj-badge ' + reajCls + '">' + reajTxt + '</span></td>'
       + '</tr>';
   }).join('');
 
   return '<table class="lm-table">'
     + '<thead><tr>'
-    + '<th>TIPO</th><th>BATENTE</th><th>MODELO</th><th>LOCAL</th>'
+    + '<th>BATENTE</th><th>MODELO</th><th>LOCAL</th>'
     + '<th>LINHA/COR</th><th>LARGURA</th>'
     + '<th>PREÇO LEROY</th><th>PREÇO CONCREM</th><th>FRETE</th><th>REAJUSTAR</th>'
     + '</tr></thead>'
@@ -176,23 +198,14 @@ function _lmRenderTabela(rows) {
     + '</table>';
 }
 
-// ── IMPRESSÃO PADRÃO (nova janela, landscape, separado por tipo) ──────────────
+// ── IMPRESSÃO ─────────────────────────────────────────────────────────────────
 
 function lmImprimir() {
-  var rows = _lmFiltrar(_lmData);
+  var tipoData = _lmData.filter(function(r) { return r.tipo === _lmActiveTipo; });
+  var rows = _lmFiltrar(tipoData);
   if (!rows.length) { alert('Nenhum dado para imprimir.'); return; }
 
-  var LOGO = new URL('Logos/logo-cores.png', window.location.href).href;
-
-  // Agrupar por tipo mantendo a ordem de aparição
-  var tiposOrdem = [];
-  var porTipo = {};
-  rows.forEach(function(r) {
-    var tipo = r.tipo || 'Outros';
-    if (!porTipo[tipo]) { porTipo[tipo] = []; tiposOrdem.push(tipo); }
-    porTipo[tipo].push(r);
-  });
-
+  var LOGO    = new URL('Logos/logo-cores.png', window.location.href).href;
   var dateStr = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
 
   var THEAD = '<thead><tr>'
@@ -201,33 +214,24 @@ function lmImprimir() {
     + '<th>PREÇO LEROY</th><th>PREÇO CONCREM</th><th>FRETE</th>'
     + '</tr></thead>';
 
-  var sections = tiposOrdem.map(function(tipo, idx) {
-    var tipoRows = porTipo[tipo];
-    var trs = tipoRows.map(function(r, i) {
-      var precoConcrem = parseFloat(r.preco_concrem) || 0;
-      if (typeof rjGetM === 'function') precoConcrem *= rjGetM('Leroy Merlin', 'leroy', r.linha_cor);
-      var zebra = i % 2 !== 0 ? 'background:#f5f5f5;' : '';
-      return '<tr>'
-        + '<td style="' + zebra + '">' + _lmEsc(r.batente    || '—') + '</td>'
-        + '<td style="' + zebra + '">' + _lmEsc(r.modelo     || '—') + '</td>'
-        + '<td style="' + zebra + '">' + _lmEsc(r.local      || '—') + '</td>'
-        + '<td style="' + zebra + '">' + _lmEsc(r.linha_cor  || '—') + '</td>'
-        + '<td style="' + zebra + '">' + _lmEsc(r.largura_tipo || '—') + '</td>'
-        + '<td style="text-align:right;' + zebra + '">' + _lmFmt(r.preco_leroy) + '</td>'
-        + '<td style="text-align:right;font-weight:bold;color:#1a5c2a;' + zebra + '">' + _lmFmt(precoConcrem) + '</td>'
-        + '<td style="text-align:right;' + zebra + '">' + _lmFmt(r.frete) + '</td>'
-        + '</tr>';
-    }).join('');
-
-    var pb = idx > 0 ? 'margin-top:10px;' : '';
-    return '<div style="' + pb + '">'
-      + '<div class="psep">' + _lmEsc(tipo.toUpperCase()) + ' <span class="psep-count">(' + tipoRows.length + ' itens)</span></div>'
-      + '<table class="ppt">' + THEAD + '<tbody>' + trs + '</tbody></table>'
-      + '</div>';
+  var trs = rows.map(function(r, i) {
+    var precoConcrem = parseFloat(r.preco_concrem) || 0;
+    if (typeof rjGetM === 'function') precoConcrem *= rjGetM('Leroy Merlin', 'leroy', r.linha_cor);
+    var zebra = i % 2 !== 0 ? 'background:#f5f5f5;' : '';
+    return '<tr>'
+      + '<td style="' + zebra + '">' + _lmEsc(r.batente     || '—') + '</td>'
+      + '<td style="' + zebra + '">' + _lmEsc(r.modelo      || '—') + '</td>'
+      + '<td style="' + zebra + '">' + _lmEsc(r.local       || '—') + '</td>'
+      + '<td style="' + zebra + '">' + _lmEsc(r.linha_cor   || '—') + '</td>'
+      + '<td style="' + zebra + '">' + _lmEsc(r.largura_tipo || '—') + '</td>'
+      + '<td style="text-align:right;' + zebra + '">' + _lmFmt(r.preco_leroy) + '</td>'
+      + '<td style="text-align:right;font-weight:bold;color:#1a5c2a;' + zebra + '">' + _lmFmt(precoConcrem) + '</td>'
+      + '<td style="text-align:right;' + zebra + '">' + _lmFmt(r.frete) + '</td>'
+      + '</tr>';
   }).join('');
 
   var html = '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">'
-    + '<title>Leroy Merlin — CONCREM</title>'
+    + '<title>Leroy Merlin — ' + _lmEsc(_lmActiveTipo) + ' — CONCREM</title>'
     + '<style>'
     + '* { margin:0; padding:0; box-sizing:border-box; }'
     + '@page { size:A4 landscape; margin:0; }'
@@ -237,9 +241,7 @@ function lmImprimir() {
     + '.phdr-logo { width:90px; } .phdr-logo img { height:30px; }'
     + '.phdr-title { text-align:center; font-size:13px; font-weight:bold; text-transform:uppercase; }'
     + '.phdr-chan { text-align:right; font-size:11px; font-weight:bold; color:#1a5c2a; text-transform:uppercase; white-space:nowrap; }'
-    + '.psep { background:#1a252f; color:#fff; font-size:9.5px; font-weight:bold; padding:3px 8px; margin:8px 0 3px; break-after:avoid; page-break-after:avoid; -webkit-print-color-adjust:exact; print-color-adjust:exact; }'
-    + '.psep-count { font-size:8px; font-weight:normal; color:#aaa; }'
-    + '.ppt { border-collapse:collapse; width:100%; margin-bottom:3px; }'
+    + '.ppt { border-collapse:collapse; width:100%; }'
     + '.ppt th { background:#2c3e50; color:#fff; font-size:8px; padding:3px 5px; text-align:center; border:0.5px solid #444; -webkit-print-color-adjust:exact; print-color-adjust:exact; }'
     + '.ppt td { border:0.5px solid #ccc; padding:2px 5px; font-size:8px; vertical-align:middle; }'
     + '.pftr { margin-top:8px; border-top:1px solid #ccc; padding-top:4px; text-align:center; }'
@@ -248,14 +250,15 @@ function lmImprimir() {
     + '</style></head><body>'
     + '<table class="phdr" width="100%"><tr>'
     + '<td class="phdr-logo"><img src="' + LOGO + '" alt="CONCREM"></td>'
-    + '<td class="phdr-title">TABELA LEROY MERLIN — PREÇOS CIF</td>'
+    + '<td class="phdr-title">LEROY MERLIN — ' + _lmEsc(_lmActiveTipo.toUpperCase()) + ' — PREÇOS CIF</td>'
     + '<td class="phdr-chan">Canal Exclusivo</td>'
     + '</tr></table>'
-    + sections
+    + '<table class="ppt">' + THEAD + '<tbody>' + trs + '</tbody></table>'
     + '<div class="pftr"><img src="' + LOGO + '" alt="CONCREM"><div class="pftr-date">' + dateStr + '</div></div>'
     + '</body></html>';
 
   var w = window.open('', '_blank', 'width=1100,height=700');
+  if (!w) { alert('Popup bloqueado. Permita popups para este site.'); return; }
   w.document.write(html);
   w.document.close();
   w.onload = function() { w.print(); };
@@ -264,7 +267,8 @@ function lmImprimir() {
 // ── EXPORTAR CSV ──────────────────────────────────────────────────────────────
 
 function lmExportarCSV() {
-  var rows = _lmFiltrar(_lmData);
+  var tipoData = _lmData.filter(function(r) { return r.tipo === _lmActiveTipo; });
+  var rows = _lmFiltrar(tipoData);
   if (!rows.length) { alert('Nenhum dado para exportar.'); return; }
 
   var header = ['TIPO','BATENTE','MODELO','LOCAL','LINHA/COR','LARGURA','PRECO_LEROY','PRECO_CONCREM','FRETE','REAJUSTAR'];
@@ -287,7 +291,7 @@ function lmExportarCSV() {
   var url  = URL.createObjectURL(blob);
   var a    = document.createElement('a');
   a.href     = url;
-  a.download = 'leroy-merlin-' + new Date().toISOString().slice(0, 10) + '.csv';
+  a.download = 'leroy-' + (_lmActiveTipo || 'todos').toLowerCase() + '-' + new Date().toISOString().slice(0, 10) + '.csv';
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -306,6 +310,10 @@ function _lmEsc(s) {
   return String(s)
     .replace(/&/g, '&amp;').replace(/</g, '&lt;')
     .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function _lmUniq(arr) {
+  return arr.filter(function(v, i, a) { return v && a.indexOf(v) === i; }).sort();
 }
 
 // ── HOOK onAfterRender ────────────────────────────────────────────────────────
