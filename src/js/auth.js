@@ -53,7 +53,13 @@ const ACESSO = {
 
 // ── UI ────────────────────────────────────────────────────
 
+function _esconderOverload() {
+  const ov = document.getElementById('auth-loading');
+  if (ov) ov.style.display = 'none';
+}
+
 function mostrarLogin() {
+  _esconderOverload();
   document.getElementById('login-screen').style.display = 'flex';
   const btn = document.getElementById('login-btn');
   if (btn) { btn.disabled = false; btn.textContent = 'Entrar →'; }
@@ -62,6 +68,7 @@ function mostrarLogin() {
 }
 
 function ocultarLogin() {
+  _esconderOverload();
   document.getElementById('login-screen').style.display = 'none';
 }
 
