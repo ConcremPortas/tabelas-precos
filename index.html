@@ -121,8 +121,9 @@
           data-expired-callback="onTurnstileExpired"
           data-error-callback="onTurnstileError">
         </div>
+        <div id="turnstile-status" class="turnstile-status">🔒 Verificando segurança...</div>
 
-        <button type="submit" id="login-btn" class="login-btn">Entrar →</button>
+        <button type="submit" id="login-btn" class="login-btn" disabled style="opacity:0.6;cursor:not-allowed;">Entrar →</button>
 
         <p id="login-error" class="login-error"></p>
 

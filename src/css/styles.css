@@ -2927,3 +2927,16 @@
   display: flex;
   justify-content: center;
 }
+
+/* Turnstile status text */
+.turnstile-status {
+  text-align: center;
+  font-size: 12px;
+  color: #9ca3af;
+  margin-top: 4px;
+  min-height: 18px;
+  transition: opacity 0.3s ease;
+}
+.turnstile-status.verified {
+  color: #16a34a;
+}

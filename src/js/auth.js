@@ -4,21 +4,41 @@ let _turnstileToken = null;
 window.onTurnstileSuccess = function(token) {
   _turnstileToken = token;
   const btn = document.getElementById('login-btn');
-  if (btn) btn.disabled = false;
+  if (btn) {
+    btn.disabled = false;
+    btn.style.opacity = '1';
+    btn.style.cursor = '';
+  }
+  const status = document.getElementById('turnstile-status');
+  if (status) {
+    status.textContent = '✓ Verificação concluída';
+    status.className = 'turnstile-status verified';
+  }
 };
 
 window.onTurnstileExpired = function() {
   _turnstileToken = null;
   const btn = document.getElementById('login-btn');
-  if (btn) btn.disabled = true;
-  const err = document.getElementById('login-error');
-  if (err) err.textContent = 'Verificação expirada. Aguarde...';
+  if (btn) {
+    btn.disabled = true;
+    btn.style.opacity = '0.6';
+    btn.style.cursor = 'not-allowed';
+  }
+  const status = document.getElementById('turnstile-status');
+  if (status) {
+    status.textContent = '⟳ Verificação expirada, aguarde...';
+    status.className = 'turnstile-status';
+  }
 };
 
 window.onTurnstileError = function() {
   _turnstileToken = null;
-  const err = document.getElementById('login-error');
-  if (err) err.textContent = 'Erro na verificação de segurança. Recarregue a página.';
+  const status = document.getElementById('turnstile-status');
+  if (status) {
+    status.textContent = '⚠ Erro na verificação. Recarregue a página.';
+    status.className = 'turnstile-status';
+    status.style.color = '#dc2626';
+  }
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
