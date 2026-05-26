@@ -2920,3 +2920,10 @@
 @media print {
   .cs-panel { display: none !important; }
 }
+
+/* Cloudflare Turnstile widget */
+.cf-turnstile {
+  margin: 16px 0;
+  display: flex;
+  justify-content: center;
+}

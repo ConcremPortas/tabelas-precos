@@ -1,3 +1,27 @@
+// ── Cloudflare Turnstile ──────────────────────────────────────────────────────
+let _turnstileToken = null;
+
+window.onTurnstileSuccess = function(token) {
+  _turnstileToken = token;
+  const btn = document.getElementById('login-btn');
+  if (btn) btn.disabled = false;
+};
+
+window.onTurnstileExpired = function() {
+  _turnstileToken = null;
+  const btn = document.getElementById('login-btn');
+  if (btn) btn.disabled = true;
+  const err = document.getElementById('login-error');
+  if (err) err.textContent = 'Verificação expirada. Aguarde...';
+};
+
+window.onTurnstileError = function() {
+  _turnstileToken = null;
+  const err = document.getElementById('login-error');
+  if (err) err.textContent = 'Erro na verificação de segurança. Recarregue a página.';
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
 const _sb = window.supabase.createClient(
   window.__SUPABASE_URL__      || '',
   window.__SUPABASE_ANON_KEY__ || '',
@@ -183,8 +207,29 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       if (!email || !senha) { mostrarErro('Preencha e-mail e senha.'); return; }
 
+      // Verificar token do Turnstile
+      if (!_turnstileToken) {
+        mostrarErro('Aguarde a verificação de segurança...');
+        return;
+      }
+
       btn.disabled    = true;
       btn.textContent = 'Entrando...';
+
+      // Verificar token no servidor via Edge Function
+      const { data: turnstileData, error: turnstileError } =
+        await _sb.functions.invoke('verificar-turnstile', {
+          body: { token: _turnstileToken }
+        });
+
+      if (turnstileError || !turnstileData?.success) {
+        mostrarErro('Falha na verificação de segurança. Tente novamente.');
+        if (window.turnstile) window.turnstile.reset();
+        _turnstileToken = null;
+        btn.disabled    = false;
+        btn.textContent = 'Entrar →';
+        return;
+      }
 
       const { data, error } = await _sb.auth.signInWithPassword({ email, password: senha });
 
