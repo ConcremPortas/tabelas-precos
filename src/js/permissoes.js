@@ -175,7 +175,8 @@ async function permSalvarPerfil() {
   }
   try {
     var res = await _sb.from('concremtp_permissoes_perfil')
-      .upsert({ perfil: _permPerfil, permissoes: perms, atualizado_por: currentUser.id }, { onConflict: 'perfil' });
+      .update({ permissoes: perms, atualizado_por: currentUser.id })
+      .eq('perfil', _permPerfil);
     if (res.error) throw res.error;
     _permToast('Permissões salvas com sucesso!');
   } catch(e) {
