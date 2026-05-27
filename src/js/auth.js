@@ -244,7 +244,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       const senha = document.getElementById('login-password').value;
       const btn   = document.getElementById('login-btn');
 
-      if (!email || !senha) { mostrarErro('Preencha e-mail e senha.'); return; }
+      if (!email || !senha) { mostrarErro('Preencha e-mail/usuário e senha.'); return; }
 
       // Verificar token do Turnstile
       if (!_turnstileToken) {
@@ -263,9 +263,28 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
       }
 
-      const { data, error } = await _sb.auth.signInWithPassword({ email, password: senha });
+      // Suporte a login por username ou e-mail
+      let emailLogin = email;
+      if (!email.includes('@')) {
+        // Busca o e-mail pelo username
+        const { data: userRow } = await _sb
+          .from('concremtp_usuarios')
+          .select('email')
+          .eq('username', email.toLowerCase())
+          .eq('ativo', true)
+          .maybeSingle();
+        if (!userRow) {
+          mostrarErro('Usuário não encontrado.');
+          btn.disabled = false;
+          btn.textContent = 'Entrar →';
+          return;
+        }
+        emailLogin = userRow.email;
+      }
 
-      if (error) { mostrarErro('E-mail ou senha incorretos.'); return; }
+      const { data, error } = await _sb.auth.signInWithPassword({ email: emailLogin, password: senha });
+
+      if (error) { mostrarErro('E-mail/usuário ou senha incorretos.'); return; }
 
       await iniciarApp(data.user.id);
     });
@@ -343,6 +362,7 @@ function renderUsuarios() {
         <div class="auth-modal-body">
           <label class="form-label">Nome completo<input id="novo-nome" type="text" class="form-input" placeholder="Nome completo"></label>
           <label class="form-label">E-mail<input id="novo-email" type="email" class="form-input" placeholder="email@concrem.com.br"></label>
+          <label class="form-label">Nome de usuário (opcional)<input id="novo-username" type="text" class="form-input" placeholder="ex: kaio (para e-mails compartilhados)"></label>
           <label class="form-label">Nível de acesso
             <select id="novo-nivel" class="form-input">
               <option value="vendedor">Vendedor</option>
@@ -498,10 +518,11 @@ function _traduzErroAuth(msg) {
 }
 
 async function salvarNovoUsuario() {
-  const nome  = document.getElementById('novo-nome')?.value.trim();
-  const email = document.getElementById('novo-email')?.value.trim();
-  const nivel = document.getElementById('novo-nivel')?.value;
-  const senha = document.getElementById('novo-senha')?.value;
+  const nome     = document.getElementById('novo-nome')?.value.trim();
+  const email    = document.getElementById('novo-email')?.value.trim();
+  const nivel    = document.getElementById('novo-nivel')?.value;
+  const senha    = document.getElementById('novo-senha')?.value;
+  const username = document.getElementById('novo-username')?.value.trim().toLowerCase() || null;
   const errEl = document.getElementById('novo-usuario-erro');
 
   if (!nome || !email || !senha) {
@@ -517,7 +538,7 @@ async function salvarNovoUsuario() {
 
   try {
     const { data, error } = await _sb.functions.invoke('criar-usuario', {
-      body: { nome, email, senha, nivel }
+      body: { nome, email, senha, nivel, username }
     });
 
     if (error) {
