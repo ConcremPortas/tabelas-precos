@@ -581,6 +581,12 @@ async function carregarTabelaUsuarios() {
         <button onclick="abrirModalEditar('${u.id}')" class="btn-editar-usr">Editar</button>
         <button onclick="abrirModalSenha('${u.id}','${_esc(u.email)}')" class="btn-editar-usr">Senha</button>
         ${u.id !== window.currentUser?.id ? `
+        <button onclick="toggleTrocarSenha('${u.id}', ${u.trocar_senha})"
+          class="btn-editar-usr"
+          title="${u.trocar_senha ? 'Troca de senha obrigatória ativada' : 'Clique para exigir troca de senha'}"
+          style="background:${u.trocar_senha ? '#f59e0b' : '#e5e7eb'};color:${u.trocar_senha ? '#fff' : '#374151'};">
+          ${u.trocar_senha ? '🔑 Trocar senha' : '🔑 Trocar senha'}
+        </button>
         <button onclick="toggleAtivo('${u.id}',${u.ativo})" class="btn-desativar-usr">
           ${u.ativo ? 'Desativar' : 'Ativar'}
         </button>` : ''}
@@ -591,6 +597,16 @@ async function carregarTabelaUsuarios() {
 async function toggleAtivo(id, ativo) {
   if (!confirm(`${ativo ? 'Desativar' : 'Ativar'} este usuário?`)) return;
   await _sb.from('concremtp_usuarios').update({ ativo: !ativo }).eq('id', id);
+  carregarTabelaUsuarios();
+}
+
+async function toggleTrocarSenha(id, atual) {
+  const novoValor = !atual;
+  const msg = novoValor
+    ? 'Exigir que este usuário troque a senha no próximo login?'
+    : 'Remover a obrigatoriedade de troca de senha?';
+  if (!confirm(msg)) return;
+  await _sb.from('concremtp_usuarios').update({ trocar_senha: novoValor }).eq('id', id);
   carregarTabelaUsuarios();
 }
 
