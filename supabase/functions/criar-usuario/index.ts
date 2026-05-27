@@ -55,7 +55,7 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    const { nome, email, senha, nivel, username } = await req.json()
+    const { nome, email, senha, nivel, username, trocar_senha } = await req.json()
 
     if (!nome || !email || !senha || !nivel) {
       return new Response(
@@ -101,6 +101,7 @@ serve(async (req) => {
         email,
         nivel,
         ativo: true,
+        trocar_senha: trocar_senha !== false,
         ...(username ? { username } : {})
       })
 
