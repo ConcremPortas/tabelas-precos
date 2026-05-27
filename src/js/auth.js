@@ -193,7 +193,23 @@ async function iniciarApp(userId) {
     email: perfil.email, nivel: perfil.nivel
   };
 
-  window.permissoes = { ...(PERMISSOES_PADRAO[perfil.nivel] || PERMISSOES_PADRAO.vendedor) };
+  // Carrega permissões do banco (perfil base + overrides do usuário)
+  const { data: permPerfil } = await _sb
+    .from('concremtp_permissoes_perfil')
+    .select('permissoes')
+    .eq('perfil', perfil.nivel)
+    .maybeSingle();
+
+  const { data: permUsuario } = await _sb
+    .from('concremtp_permissoes_usuario')
+    .select('permissoes_override')
+    .eq('usuario_id', userId)
+    .maybeSingle();
+
+  const basePerms = PERMISSOES_PADRAO[perfil.nivel] || PERMISSOES_PADRAO.vendedor;
+  const perfilPerms = (permPerfil && permPerfil.permissoes) || {};
+  const userOverride = (permUsuario && permUsuario.permissoes_override) || {};
+  window.permissoes = { ...basePerms, ...perfilPerms, ...userOverride };
 
   if (typeof rjInitFromSupabase === 'function') await rjInitFromSupabase();
 
