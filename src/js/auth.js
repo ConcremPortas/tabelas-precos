@@ -594,6 +594,10 @@ async function carregarTabelaUsuarios() {
         </button>
         <button onclick="toggleAtivo('${u.id}',${u.ativo})" class="btn-desativar-usr">
           ${u.ativo ? 'Desativar' : 'Ativar'}
+        </button>
+        <button onclick="excluirUsuario('${u.id}','${_esc(u.nome)}')" class="btn-desativar-usr"
+          style="background:#fee2e2;color:#dc2626;border-color:#fca5a5;">
+          Excluir
         </button>` : ''}
       </td>
     </tr>`).join('');
@@ -612,6 +616,21 @@ async function toggleTrocarSenha(id, atual) {
     : 'Remover a obrigatoriedade de troca de senha?';
   if (!confirm(msg)) return;
   await _sb.from('concremtp_usuarios').update({ trocar_senha: novoValor }).eq('id', id);
+  carregarTabelaUsuarios();
+}
+
+async function excluirUsuario(id, nome) {
+  if (!confirm(`Tem certeza que deseja excluir o usuário "${nome}"?\n\nEsta ação não pode ser desfeita.`)) return;
+
+  const { data, error } = await _sb.functions.invoke('excluir-usuario', {
+    body: { usuario_id: id }
+  });
+
+  if (error || data?.error) {
+    alert('Erro ao excluir usuário: ' + (error?.message || data?.error));
+    return;
+  }
+
   carregarTabelaUsuarios();
 }
 
