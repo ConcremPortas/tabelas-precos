@@ -362,7 +362,7 @@ function renderUsuarios() {
         <div class="auth-modal-body">
           <label class="form-label">Nome completo<input id="novo-nome" type="text" class="form-input" placeholder="Nome completo"></label>
           <label class="form-label">E-mail<input id="novo-email" type="email" class="form-input" placeholder="email@concrem.com.br"></label>
-          <label class="form-label">Nome de usuário (opcional)<input id="novo-username" type="text" class="form-input" placeholder="ex: kaio (para e-mails compartilhados)"></label>
+          <label class="form-label">Nome de usuário (opcional)<input id="novo-username" type="text" class="form-input" placeholder="ex: kaio (para e-mails compartilhados)" autocomplete="off"></label>
           <label class="form-label">Nível de acesso
             <select id="novo-nivel" class="form-input">
               <option value="vendedor">Vendedor</option>
@@ -370,7 +370,7 @@ function renderUsuarios() {
               <option value="administrador">Administrador</option>
             </select>
           </label>
-          <label class="form-label">Senha provisória<input id="novo-senha" type="password" class="form-input" placeholder="Mínimo 6 caracteres"></label>
+          <label class="form-label">Senha provisória<input id="novo-senha" type="password" class="form-input" placeholder="Mínimo 6 caracteres" autocomplete="new-password"></label>
           <p id="novo-usuario-erro" class="form-error"></p>
         </div>
         <div class="auth-modal-footer">
@@ -430,7 +430,7 @@ function renderUsuarios() {
 }
 
 function abrirModalNovoUsuario() {
-  ['novo-nome','novo-email','novo-senha'].forEach(id => {
+  ['novo-nome','novo-email','novo-username','novo-senha'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
   });
   const nivel = document.getElementById('novo-nivel');
