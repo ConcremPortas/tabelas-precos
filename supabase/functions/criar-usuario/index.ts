@@ -100,8 +100,7 @@ serve(async (req) => {
         nome,
         email,
         nivel,
-        ativo: true,
-        criado_por: user.id
+        ativo: true
       })
 
     if (dbErr) {
