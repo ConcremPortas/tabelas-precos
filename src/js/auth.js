@@ -180,13 +180,15 @@ async function confirmarTrocaSenha() {
   const { data: result, error } = await _sb.functions.invoke('alterar-senha', {
     body: { nova_senha: nova }
   });
-  if (error || result?.error) {
+  const msgErro = result?.error || error?.message || '';
+  if (msgErro) {
     erro.style.color = '#dc2626';
-    const msg = (error?.message || result?.error || '');
-    if (msg.toLowerCase().includes('weak') || msg.toLowerCase().includes('easy to guess')) {
+    if (msgErro.toLowerCase().includes('weak') || msgErro.toLowerCase().includes('easy to guess')) {
       erro.textContent = 'Senha muito fraca. Use letras maiúsculas, minúsculas, números e símbolos.';
+    } else if (msgErro.toLowerCase().includes('já foi utilizada') || msgErro.toLowerCase().includes('anteriormente')) {
+      erro.textContent = msgErro;
     } else {
-      erro.textContent = msg || 'Erro ao salvar senha.';
+      erro.textContent = 'Erro ao salvar senha. Tente novamente.';
     }
     return;
   }
