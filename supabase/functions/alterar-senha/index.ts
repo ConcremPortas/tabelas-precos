@@ -7,6 +7,14 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }
 
+async function hashSenha(senha: string): Promise<string> {
+  const encoder = new TextEncoder()
+  const data = encoder.encode(senha)
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data)
+  const hashArray = Array.from(new Uint8Array(hashBuffer))
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -21,7 +29,6 @@ serve(async (req) => {
       )
     }
 
-    // Verifica quem está chamando
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
@@ -45,12 +52,30 @@ serve(async (req) => {
       )
     }
 
-    // Usa service_role para alterar sem precisar da senha atual
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
+    // Verifica histórico de senhas (últimas 5)
+    const novoHash = await hashSenha(nova_senha)
+
+    const { data: historico } = await supabaseAdmin
+      .from('concremtp_senha_historico')
+      .select('senha_hash')
+      .eq('usuario_id', user.id)
+      .order('criado_em', { ascending: false })
+      .limit(5)
+
+    const jaUsada = (historico || []).some(h => h.senha_hash === novoHash)
+    if (jaUsada) {
+      return new Response(
+        JSON.stringify({ error: 'Esta senha já foi utilizada anteriormente. Escolha uma senha diferente.' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Altera a senha
     const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
       user.id,
       { password: nova_senha }
@@ -62,6 +87,11 @@ serve(async (req) => {
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
+
+    // Salva no histórico
+    await supabaseAdmin
+      .from('concremtp_senha_historico')
+      .insert({ usuario_id: user.id, senha_hash: novoHash })
 
     return new Response(
       JSON.stringify({ success: true }),
