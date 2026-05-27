@@ -45,6 +45,7 @@ function renderPermissoes() {
   }
   var tabPerfil  = _permTab === 'perfil'  ? ' active' : '';
   var tabUsuario = _permTab === 'usuario' ? ' active' : '';
+  setTimeout(function() { carregarPermissoesUI(); }, 0);
   return '<div class="page-header">'
     + '<div class="page-title">Gerenciamento de Permissões</div>'
     + '<div class="page-meta"><span class="meta-pill">Controle granular de acesso</span></div>'
