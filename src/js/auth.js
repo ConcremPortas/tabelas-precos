@@ -198,6 +198,8 @@ async function confirmarTrocaSenha() {
 
   document.getElementById('modal-trocar-senha').remove();
   if (typeof initApp === 'function') initApp();
+  const primeiroItem = document.querySelector('.nav-item[data-section]');
+  if (primeiroItem && typeof navigate === 'function') navigate(primeiroItem);
 }
 
 function atualizarSidebar(user) {
@@ -302,6 +304,9 @@ async function iniciarApp(userId) {
   }
 
   if (typeof initApp === 'function') initApp();
+  // Navegar para o primeiro item do menu disponível
+  const primeiroItem = document.querySelector('.nav-item[data-section]');
+  if (primeiroItem && typeof navigate === 'function') navigate(primeiroItem);
 }
 
 // ── INICIALIZAÇÃO ─────────────────────────────────────────
