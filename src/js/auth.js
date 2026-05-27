@@ -62,6 +62,7 @@ const PERMISSOES_PADRAO = {
     adicionar_itens_tabela: true, remover_itens_tabela: true,
     adicionar_colunas_tabela: true, imprimir_pdf: true,
     gerenciar_usuarios: true, gerenciar_permissoes: true,
+    gerenciar_tabelas: true, ver_leroy_merlin: true,
   },
   gerente: {
     ver_tabelas: true, ver_canal_fabrica: true,
@@ -72,6 +73,7 @@ const PERMISSOES_PADRAO = {
     adicionar_itens_tabela: false, remover_itens_tabela: false,
     adicionar_colunas_tabela: false, imprimir_pdf: true,
     gerenciar_usuarios: false, gerenciar_permissoes: false,
+    gerenciar_tabelas: false, ver_leroy_merlin: true,
   },
   vendedor: {
     ver_tabelas: true, ver_canal_fabrica: true,
@@ -82,6 +84,7 @@ const PERMISSOES_PADRAO = {
     adicionar_itens_tabela: false, remover_itens_tabela: false,
     adicionar_colunas_tabela: false, imprimir_pdf: true,
     gerenciar_usuarios: false, gerenciar_permissoes: false,
+    gerenciar_tabelas: false, ver_leroy_merlin: true,
   },
 };
 
@@ -161,7 +164,7 @@ function aplicarPermissoes() {
     b.style.display = p.gerenciar_permissoes ? '' : 'none';
   });
   document.querySelectorAll('.nav-item-gerenciar-tabelas').forEach(b => {
-    b.style.display = p.gerenciar_permissoes ? '' : 'none';
+    b.style.display = p.gerenciar_tabelas ? '' : 'none';
   });
 }
 

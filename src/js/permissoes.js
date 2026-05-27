@@ -18,15 +18,17 @@ const PERM_LABELS = {
   imprimir_pdf:             'Imprimir / exportar PDF',
   gerenciar_usuarios:       'Gerenciar usuários',
   gerenciar_permissoes:     'Gerenciar permissões',
+  gerenciar_tabelas:        'Gerenciar tabelas (cadastro)',
+  ver_leroy_merlin:         'Ver canal Leroy Merlin',
 };
 
 const PERM_CATS = {
   'Tabelas':         ['ver_tabelas'],
-  'Canais de Venda': ['ver_canal_fabrica','ver_canal_distribuidora','ver_canal_dag','ver_canal_elo'],
+  'Canais de Venda': ['ver_canal_fabrica','ver_canal_distribuidora','ver_canal_dag','ver_canal_elo','ver_leroy_merlin'],
   'Reajustes':       ['aplicar_reajuste','desfazer_reajuste','ver_historico_reajustes','exportar_historico'],
   'Edição':          ['editar_itens_tabela','adicionar_itens_tabela','remover_itens_tabela','adicionar_colunas_tabela'],
   'Exportação':      ['imprimir_pdf'],
-  'Administração':   ['gerenciar_usuarios','gerenciar_permissoes'],
+  'Administração':   ['gerenciar_usuarios','gerenciar_permissoes','gerenciar_tabelas'],
 };
 
 // state
