@@ -236,16 +236,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       btn.disabled    = true;
       btn.textContent = 'Entrando...';
 
-      // Verificar token no servidor via Edge Function
-      const { data: turnstileData, error: turnstileError } =
-        await _sb.functions.invoke('verificar-turnstile', {
-          body: { token: _turnstileToken }
-        });
-
-      if (turnstileError || !turnstileData?.success) {
-        mostrarErro('Falha na verificação de segurança. Tente novamente.');
-        if (window.turnstile) window.turnstile.reset();
-        _turnstileToken = null;
+      // Token validado pelo widget do Cloudflare
+      if (!_turnstileToken) {
+        mostrarErro('Aguarde a verificação de segurança.');
         btn.disabled    = false;
         btn.textContent = 'Entrar →';
         return;
