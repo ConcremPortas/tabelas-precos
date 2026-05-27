@@ -177,10 +177,28 @@ async function confirmarTrocaSenha() {
   erro.style.color = '#6b7280';
   erro.textContent = 'Salvando...';
 
-  const { data: result, error } = await _sb.functions.invoke('alterar-senha', {
-    body: { nova_senha: nova }
-  });
-  const msgErro = result?.error || error?.message || '';
+  let msgErro = '';
+  try {
+    const { data: result, error } = await _sb.functions.invoke('alterar-senha', {
+      body: { nova_senha: nova }
+    });
+    if (error) {
+      // Tenta extrair mensagem do corpo da resposta
+      try {
+        const parsed = typeof error.context?.json === 'function'
+          ? await error.context.json()
+          : null;
+        msgErro = parsed?.error || error.message || '';
+      } catch {
+        msgErro = error.message || '';
+      }
+    } else if (result?.error) {
+      msgErro = result.error;
+    }
+  } catch(e) {
+    msgErro = e.message || 'Erro inesperado.';
+  }
+
   if (msgErro) {
     erro.style.color = '#dc2626';
     if (msgErro.toLowerCase().includes('weak') || msgErro.toLowerCase().includes('easy to guess')) {
