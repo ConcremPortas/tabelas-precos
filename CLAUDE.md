@@ -1,22 +1,29 @@
-# CLAUDE.md — App Tabelas Comerciais CONCREM
+# CLAUDE.md — [PROJECT_NAME]
 
-Referência completa para desenvolvedores e IAs que trabalhem neste projeto.
-Leia antes de qualquer alteração.
+Template de referência para apps web com Vanilla JS + Supabase + Vercel.
+Leia antes de qualquer alteração. Preencha os placeholders ao reutilizar.
+
+| Placeholder | Substituir por |
+|-------------|---------------|
+| `[PROJECT_NAME]` | Nome do projeto |
+| `[PROJECT_PREFIX]` | Prefixo das tabelas no banco (ex: `myapp_`) |
+| `[PROJECT_REF]` | Project ref do Supabase (ex: `abcdefghij`) |
+| `[TURNSTILE_SITE_KEY]` | Site Key pública do Cloudflare Turnstile |
+| `[TURNSTILE_SECRET_KEY]` | Secret Key do Turnstile (somente no Supabase Secrets) |
+| `[VITE_SUPABASE_URL]` | URL do projeto Supabase |
+| `[VITE_SUPABASE_ANON_KEY]` | Anon key pública do Supabase |
 
 ---
 
 ## 1. Visão Geral do Projeto
 
-App web de tabelas de preços comerciais da CONCREM (fabricante de portas e acabamentos).
-Substitui a planilha `TABELAS_COMERCIAL.xlsx`. Acesso restrito por login com controle
-de permissões granular por nível de usuário.
+[PROJECT_NAME] é um app web com acesso restrito por login, controle de permissões
+granular por nível de usuário e operações privilegiadas isoladas em Edge Functions.
 
-**Funcionalidades principais:**
-- Visualização de tabelas de preços por produto e canal de venda
-- Sistema de reajuste de preços com histórico e desfazer
-- Gestão de itens das tabelas (CRUD via gerenciador)
-- Canal especial Leroy Merlin com estrutura própria
-- Impressão em PDF por seção
+**Funcionalidades do projeto:**
+- [FEATURE_1]
+- [FEATURE_2]
+- [FEATURE_N]
 - Gerenciamento de usuários e permissões (somente administrador)
 - Troca de senha obrigatória no primeiro login
 
@@ -27,102 +34,84 @@ de permissões granular por nível de usuário.
 | Camada | Tecnologia |
 |--------|-----------|
 | Frontend | HTML5 + CSS3 + JavaScript puro (vanilla JS, sem frameworks) |
-| Build | Vite (apenas para injeção de variáveis `.env` e bundle) |
+| Build | Vite (injeção de variáveis `.env` e bundle) |
 | Autenticação | Supabase Auth (email/password + suporte a username) |
-| Banco de dados | Supabase (PostgreSQL) |
+| Banco de dados | Supabase (PostgreSQL) com RLS |
 | Edge Functions | Deno/TypeScript no Supabase |
 | Proteção de login | Cloudflare Turnstile (modo Managed) |
 | Deploy frontend | Vercel |
-| Fontes externas | Google Fonts (Inter, DM Mono), Tabler Icons (local) |
 
-**Dependências de runtime (CDN):**
-- `https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2` — Supabase JS SDK
-- `https://challenges.cloudflare.com/turnstile/v0/api.js` — Turnstile widget
+**Regra absoluta:** sem frameworks CSS (Bootstrap, Tailwind) nem JS (jQuery, React, Vue).
 
 ---
 
 ## 3. Estrutura de Arquivos
 
 ```
-index.html                        ← HTML principal + carregamento de scripts
-vercel.json                       ← headers de segurança e config de deploy
-package.json                      ← scripts: dev, build, preview
-vite.config.js                    ← injeção de variáveis de ambiente
-build-post.cjs                    ← pós-processamento do build
-.env                              ← VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY (nunca commitar)
-CLAUDE.md                         ← este arquivo
-
-Logos/
-  concrem-logo.png
-  concrem-logo-mini.png
-  Isotipo-Cores.png
-  concrem-fav.ico
+index.html                  ← HTML principal + carregamento de scripts
+vercel.json                 ← headers de segurança e config de deploy
+package.json                ← scripts: dev, build, preview
+vite.config.js              ← injeção de variáveis de ambiente
+.env                        ← VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY (nunca commitar)
+CLAUDE.md                   ← este arquivo
 
 src/
   css/
-    styles.css                    ← todo o CSS (variáveis, layout, sidebar, tabelas, modal, print, custom-select)
-  fonts/
-    tabler/                       ← ícones Tabler (local, sem CDN)
+    styles.css              ← todo o CSS do projeto
   js/
-    data.js                       ← dados das tabelas e variáveis de estado global
-    render.js                     ← funções de renderização e navegação
-    reajuste.js                   ← sistema de reajuste com histórico e desfazer
-    auth.js                       ← autenticação, permissões, gestão de usuários
-    permissoes.js                 ← tela de gerenciamento de permissões por perfil/usuário
-    gerenciador.js                ← CRUD de itens das tabelas (gerenciar.js)
-    gerenciar-tabelas.js          ← UI do gerenciador de tabelas
-    leroymerlin.js                ← renderização do canal Leroy Merlin
-    microinteractions.js          ← animações e feedback visual
-    custom-select.js              ← componente de select customizado com busca
+    data.js                 ← dados e variáveis de estado global
+    render.js               ← funções de renderização e navegação
+    auth.js                 ← autenticação, permissões, gestão de usuários
+    [feature].js            ← módulos de funcionalidades específicas
 
 supabase/
   functions/
-    criar-usuario/index.ts        ← cria usuário no Auth + tabela (requer admin)
-    alterar-senha/index.ts        ← altera senha via service_role + histórico de hashes
-    excluir-usuario/index.ts      ← exclui do Auth + tabela (requer admin)
-    verificar-turnstile/index.ts  ← valida token Turnstile na Cloudflare (--no-verify-jwt)
+    criar-usuario/          ← cria usuário no Auth + tabela (requer admin)
+    alterar-senha/          ← altera senha via service_role + histórico de hashes
+    excluir-usuario/        ← exclui do Auth + tabela (requer admin)
+    verificar-turnstile/    ← valida token Turnstile (--no-verify-jwt)
 ```
 
-**Ordem obrigatória de carregamento dos scripts:**
-1. `data.js` — define dados e estado global
-2. `render.js` — usa dados, define `render()` e funções de UI
-3. `reajuste.js` — intercepta `render()`, usa dados e funções de render
-4. `auth.js` — autenticação, chama `initApp()` após login
-5. `permissoes.js` — tela de permissões
-6. `gerenciador.js` — CRUD de itens
-7. `gerenciar-tabelas.js` — UI do gerenciador
-8. `leroymerlin.js` — canal Leroy Merlin
-9. `microinteractions.js` — animações
-10. `custom-select.js` — selects customizados (último, inicializa todos os selects)
+**Ordem de carregamento dos scripts em `index.html`:**
+1. Scripts de dados e estado global
+2. Scripts de renderização
+3. Scripts de features (cada um pode interceptar funções anteriores)
+4. `auth.js` — autenticação (chama `initApp()` após login bem-sucedido)
+5. Scripts de UI complementares (selects customizados, microinterações, etc.)
+
+Nunca alterar esta ordem sem verificar dependências entre os módulos.
 
 ---
 
 ## 4. Padrões de Segurança Obrigatórios
 
 ### Autenticação e login
-- Login aceita **e-mail** ou **username** (campo `username` na tabela `concremtp_usuarios`)
-- Se o campo não contém `@`, busca o e-mail correspondente via `username`
-- **Cloudflare Turnstile obrigatório**: botão "Entrar" fica desabilitado até `onTurnstileSuccess` ser chamado
-- Site Key pública: `0x4AAAAAADWNyGIWAgcMsRkn` (pode ficar no frontend)
-- Secret Key: **somente** no Supabase Secret `TURNSTILE_SECRET_KEY` (jamais no frontend)
-- A função `verificar-turnstile` deve ser deployada com `--no-verify-jwt` (chamada antes do login)
+- Login aceita **e-mail** ou **username** (campo `username` na tabela de usuários)
+- Se o campo não contém `@`, busca o e-mail correspondente pelo username no banco
+- **Cloudflare Turnstile obrigatório**: botão de submit fica desabilitado até
+  `onTurnstileSuccess` ser chamado pelo widget
+- Site Key pública `[TURNSTILE_SITE_KEY]`: pode ficar no HTML (atributo `data-sitekey`)
+- Secret Key `[TURNSTILE_SECRET_KEY]`: **somente** no Supabase Secret (jamais no frontend)
+- A função `verificar-turnstile` deve ser deployada com `--no-verify-jwt`
+  (é chamada antes do login, sem token de sessão)
 
 ### Senhas
-- Mínimo **8 caracteres** (validado no frontend e na Edge Function)
-- **Bloqueio das últimas 5 senhas** usadas (tabela `concremtp_senha_historico`, comparação via SHA-256)
+- Mínimo **8 caracteres** (validado no frontend e revalidado na Edge Function)
+- **Bloqueio das últimas 5 senhas** (tabela `[PROJECT_PREFIX]senha_historico`,
+  comparação via SHA-256 com `crypto.subtle.digest`)
 - Troca de senha obrigatória controlada pelo campo `trocar_senha BOOLEAN` na tabela de usuários
 - Administrador pode ativar/desativar a obrigatoriedade individualmente por usuário
 
 ### Chaves e secrets
 - `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY` → somente no `.env` (Vite injeta no build)
 - `SUPABASE_SERVICE_ROLE_KEY` → somente nas Edge Functions via `Deno.env.get()`
-- **Nunca** expor `service_role` key no código frontend, mesmo que ofuscado
+- **Nunca** expor `service_role` no código frontend, mesmo que ofuscado ou em variável de build
 
 ### RLS (Row Level Security)
 - Todas as tabelas do projeto devem ter RLS habilitado
-- Políticas por nível: administrador vê tudo; gerente e vendedor veem apenas o necessário
-- Operações de escrita sensíveis (criar/excluir usuário, alterar senha de outro) devem
-  passar por Edge Functions com `service_role`, nunca direto do frontend
+- Políticas por nível: administrador acessa tudo; outros perfis acessam apenas o necessário
+- Operações sensíveis (criar/excluir/alterar senha de outro usuário) passam
+  obrigatoriamente por Edge Functions com `service_role`
 
 ---
 
@@ -148,73 +137,95 @@ serve(async (req) => {
   try {
     // 1. Verificar Authorization header
     const authHeader = req.headers.get('Authorization')
-    if (!authHeader) return erro(401, 'Não autorizado')
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: 'Não autorizado' }), {
+        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
+    }
 
-    // 2. Verificar identidade com anon key (nunca pular este passo)
-    const supabaseClient = createClient(URL, ANON_KEY, {
-      global: { headers: { Authorization: authHeader } }
-    })
-    const { data: { user } } = await supabaseClient.auth.getUser()
-    if (!user) return erro(401, 'Não autorizado')
+    // 2. Verificar identidade com anon key (NUNCA pular este passo)
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      { global: { headers: { Authorization: authHeader } } }
+    )
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser()
+    if (userError || !user) {
+      return new Response(JSON.stringify({ error: 'Não autorizado' }), {
+        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
+    }
 
-    // 3. Verificar permissão se necessário
-    // ...
+    // 3. Verificar nível de permissão se necessário
+    const { data: perfil } = await supabaseClient
+      .from('[PROJECT_PREFIX]usuarios')
+      .select('nivel, ativo')
+      .eq('id', user.id)
+      .single()
+    if (!perfil || perfil.nivel !== 'administrador' || !perfil.ativo) {
+      return new Response(JSON.stringify({ error: 'Acesso negado' }), {
+        status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
+    }
 
     // 4. Operação privilegiada com service_role
-    const supabaseAdmin = createClient(URL, SERVICE_ROLE_KEY)
-    // ...
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    )
+    // ... lógica da função
 
     return new Response(JSON.stringify({ success: true }), {
-      status: 200,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     })
 
   } catch (err) {
     return new Response(JSON.stringify({ error: err.message }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     })
   }
 })
 ```
 
 ### Regras
-- **Sempre** incluir `x-client-info` no `corsHeaders`
-- **Sempre** verificar autenticação via `anon key` antes de usar `service_role`
-- Funções públicas (sem login): usar `--no-verify-jwt` no deploy
-- Funções privadas: JWT é verificado automaticamente pelo Supabase
+- **Sempre** incluir `x-client-info` e `apikey` no `corsHeaders`
+- **Sempre** verificar identidade via `anon key` antes de qualquer `service_role`
+- **Sempre** responder ao método `OPTIONS` com `corsHeaders` (preflight CORS)
+- Funções públicas (sem sessão, ex: Turnstile): deploy com `--no-verify-jwt`
+- Funções privadas: JWT é verificado automaticamente pelo Supabase (não usar `--no-verify-jwt`)
+- Nunca usar `service_role` diretamente no cliente — sempre via Edge Function
 
 ---
 
 ## 6. Padrões de Banco de Dados
 
 ### Prefixo de tabelas
-Todas as tabelas do projeto usam o prefixo `concremtp_`:
+Todas as tabelas do projeto usam o prefixo `[PROJECT_PREFIX]`:
 
 | Tabela | Finalidade |
 |--------|-----------|
-| `concremtp_usuarios` | Perfis de usuários (id, nome, email, username, nivel, ativo, trocar_senha) |
-| `concremtp_permissoes_perfil` | Permissões padrão por nível (administrador/gerente/vendedor) |
-| `concremtp_permissoes_usuario` | Overrides individuais de permissão por usuário |
-| `concremtp_reajustes` | Histórico de reajustes de preços |
-| `concremtp_audit_tabelas` | Auditoria de alterações nas tabelas |
-| `concremtp_senha_historico` | Hashes SHA-256 das últimas senhas (evitar reuso) |
+| `[PROJECT_PREFIX]usuarios` | Perfis (id, nome, email, username, nivel, ativo, trocar_senha) |
+| `[PROJECT_PREFIX]permissoes_perfil` | Permissões padrão por nível de acesso |
+| `[PROJECT_PREFIX]permissoes_usuario` | Overrides individuais por usuário |
+| `[PROJECT_PREFIX]senha_historico` | Hashes SHA-256 das últimas senhas usadas |
+| `[PROJECT_PREFIX]audit_*` | Tabelas de auditoria de operações |
 
-### Convenções SQL
+### Convenções SQL obrigatórias
+
 ```sql
 -- Chave primária
 id UUID PRIMARY KEY DEFAULT gen_random_uuid()
 
 -- Timestamps
-criado_em  TIMESTAMPTZ DEFAULT NOW()
+criado_em     TIMESTAMPTZ DEFAULT NOW()
 atualizado_em TIMESTAMPTZ DEFAULT NOW()
 
 -- Foreign keys com cascade
-usuario_id UUID REFERENCES concremtp_usuarios(id) ON DELETE CASCADE
+usuario_id UUID REFERENCES [PROJECT_PREFIX]usuarios(id) ON DELETE CASCADE
 
--- UNIQUE onde necessário
+-- UNIQUE onde aplicável
 username TEXT UNIQUE
-email TEXT UNIQUE
+email    TEXT UNIQUE
 ```
 
 ---
@@ -225,82 +236,94 @@ email TEXT UNIQUE
 
 | Nível | Descrição |
 |-------|-----------|
-| `administrador` | Acesso total — gerencia usuários, permissões e tabelas |
-| `gerente` | Visualiza tudo, aplica reajustes, não edita itens nem gerencia usuários |
-| `vendedor` | Somente visualização das tabelas e canais autorizados |
+| `administrador` | Acesso total — gerencia usuários, permissões e configurações |
+| `gerente` | Acesso intermediário — sem gestão de usuários |
+| `vendedor` | Acesso básico — somente leitura ou ações limitadas |
 
-### Como funciona o carregamento
+### Como funciona o carregamento de permissões
 
-1. `iniciarApp()` carrega permissões do banco em três camadas:
-   - `PERMISSOES_PADRAO[nivel]` — fallback hardcoded no frontend
-   - `concremtp_permissoes_perfil` — override por nível (editável pelo admin)
-   - `concremtp_permissoes_usuario` — override individual por usuário
-2. Resultado final: `window.permissoes = { ...base, ...perfilPerms, ...userOverride }`
-3. `aplicarPermissoes()` mostra/oculta elementos da UI com base em `window.permissoes`
+A função `iniciarApp()` carrega permissões em três camadas (ordem de precedência):
 
-### Chaves de permissão disponíveis
 ```
-ver_tabelas, ver_canal_fabrica, ver_canal_distribuidora, ver_canal_dag,
-ver_canal_elo, ver_leroy_merlin, aplicar_reajuste, desfazer_reajuste,
-ver_historico_reajustes, exportar_historico, editar_itens_tabela,
-adicionar_itens_tabela, remover_itens_tabela, adicionar_colunas_tabela,
-imprimir_pdf, gerenciar_usuarios, gerenciar_permissoes, gerenciar_tabelas
+PERMISSOES_PADRAO[nivel]          ← fallback hardcoded no frontend (auth.js)
+        ↓ merge
+[PROJECT_PREFIX]permissoes_perfil ← override por nível (editável pelo admin)
+        ↓ merge
+[PROJECT_PREFIX]permissoes_usuario ← override individual por usuário
+        ↓
+window.permissoes                 ← resultado final usado em temPermissao()
 ```
 
-### Regra para novas permissões
-Ao adicionar uma nova permissão:
+### Regra para adicionar uma nova permissão
+
 1. Adicionar em `PERMISSOES_PADRAO` nos três perfis em `auth.js`
-2. Adicionar em `PERM_LABELS` em `permissoes.js`
+2. Adicionar em `PERM_LABELS` em `permissoes.js` (rótulo para a UI)
 3. Adicionar na categoria correta em `PERM_CATS` em `permissoes.js`
-4. Usar `temPermissao('chave')` no frontend para verificar
+4. Usar `temPermissao('chave')` no frontend para verificar acesso
+5. Nunca verificar permissões apenas no frontend para operações destrutivas —
+   validar também na Edge Function
 
 ---
 
 ## 8. Padrões de Deploy
 
 ### Frontend — Vercel
-- Build: `npm run build` → output em `dist/`
-- Variáveis de ambiente obrigatórias no painel da Vercel:
-  ```
-  VITE_SUPABASE_URL=https://xxxxxxxxxx.supabase.co
-  VITE_SUPABASE_ANON_KEY=eyJ...
-  ```
-- `vercel.json` configura headers de segurança para todas as rotas:
-  - `X-Frame-Options: SAMEORIGIN`
-  - `X-Content-Type-Options: nosniff`
-  - `Referrer-Policy: strict-origin-when-cross-origin`
-  - `Permissions-Policy: camera=(), microphone=(), geolocation=()`
-  - `Content-Security-Policy` — inclui todos os domínios necessários
 
-### CSP atual — domínios permitidos
-| Diretiva | Domínios |
-|----------|---------|
+Variáveis de ambiente obrigatórias no painel da Vercel:
+```
+VITE_SUPABASE_URL=[VITE_SUPABASE_URL]
+VITE_SUPABASE_ANON_KEY=[VITE_SUPABASE_ANON_KEY]
+```
+
+`vercel.json` deve conter headers de segurança para todas as rotas (`source: "/(.*)"`)  :
+
+```json
+{
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Frame-Options",           "value": "SAMEORIGIN" },
+        { "key": "X-Content-Type-Options",    "value": "nosniff" },
+        { "key": "Referrer-Policy",           "value": "strict-origin-when-cross-origin" },
+        { "key": "Permissions-Policy",        "value": "camera=(), microphone=(), geolocation=()" },
+        { "key": "Content-Security-Policy",   "value": "default-src 'self'; ..." }
+      ]
+    }
+  ]
+}
+```
+
+**CSP mínima para este stack:**
+
+| Diretiva | Domínios obrigatórios |
+|----------|-----------------------|
 | `script-src` | `cdn.jsdelivr.net`, `fonts.googleapis.com`, `challenges.cloudflare.com` |
 | `style-src` | `fonts.googleapis.com`, `fonts.gstatic.com`, `challenges.cloudflare.com` |
-| `connect-src` | `*.supabase.co`, `challenges.cloudflare.com`, `cdn.jsdelivr.net` |
+| `connect-src` | `*.supabase.co`, `wss://*.supabase.co`, `challenges.cloudflare.com`, `cdn.jsdelivr.net` |
 | `frame-src` | `challenges.cloudflare.com` |
 | `worker-src` | `blob:` |
 
 **Ao adicionar novos scripts ou iframes externos, atualizar `vercel.json` antes do deploy.**
 
 ### Edge Functions — Supabase
-- Projeto: `tydjxesipmbtxsceeaav`
-- Deploy padrão (com JWT):
-  ```bash
-  supabase functions deploy <nome> --project-ref tydjxesipmbtxsceeaav
-  ```
-- Deploy sem JWT (funções públicas):
-  ```bash
-  supabase functions deploy verificar-turnstile --project-ref tydjxesipmbtxsceeaav --no-verify-jwt
-  ```
+
+```bash
+# Deploy com JWT (funções privadas — padrão)
+supabase functions deploy <nome> --project-ref [PROJECT_REF]
+
+# Deploy sem JWT (funções públicas, ex: verificar-turnstile)
+supabase functions deploy verificar-turnstile --project-ref [PROJECT_REF] --no-verify-jwt
+```
 
 ### Cloudflare Turnstile
-- Hostname do site deve estar cadastrado no painel da Cloudflare
-- Site Key (pública): no `index.html` em `data-sitekey`
-- Secret Key: configurada como Supabase Secret:
-  ```bash
-  supabase secrets set TURNSTILE_SECRET_KEY=0x4... --project-ref tydjxesipmbtxsceeaav
-  ```
+
+1. Cadastrar o hostname do site no painel da Cloudflare
+2. Colocar a Site Key no HTML: `data-sitekey="[TURNSTILE_SITE_KEY]"`
+3. Configurar a Secret Key como Supabase Secret:
+   ```bash
+   supabase secrets set TURNSTILE_SECRET_KEY=[TURNSTILE_SECRET_KEY] --project-ref [PROJECT_REF]
+   ```
 
 ---
 
@@ -313,20 +336,20 @@ npm run dev
 # Build para produção
 npm run build
 
-# Deploy de Edge Function (com JWT)
-supabase functions deploy <nome> --project-ref tydjxesipmbtxsceeaav
+# Deploy de Edge Function (com JWT — padrão)
+supabase functions deploy <nome> --project-ref [PROJECT_REF]
 
 # Deploy de Edge Function (sem JWT — funções públicas)
-supabase functions deploy verificar-turnstile --project-ref tydjxesipmbtxsceeaav --no-verify-jwt
+supabase functions deploy <nome> --project-ref [PROJECT_REF] --no-verify-jwt
 
 # Configurar secret
-supabase secrets set CHAVE=valor --project-ref tydjxesipmbtxsceeaav
+supabase secrets set CHAVE=valor --project-ref [PROJECT_REF]
 
 # Listar secrets configurados
-supabase secrets list --project-ref tydjxesipmbtxsceeaav
+supabase secrets list --project-ref [PROJECT_REF]
 
-# Ver logs de Edge Function
-supabase functions logs <nome> --project-ref tydjxesipmbtxsceeaav
+# Ver logs de Edge Function em tempo real
+supabase functions logs <nome> --project-ref [PROJECT_REF]
 ```
 
 ---
@@ -335,31 +358,31 @@ supabase functions logs <nome> --project-ref tydjxesipmbtxsceeaav
 
 ### Frontend
 - **Nunca** usar frameworks CSS (Bootstrap, Tailwind) ou JS (jQuery, React, Vue)
-- **Nunca** expor `SUPABASE_SERVICE_ROLE_KEY` em nenhum arquivo do frontend
-- **Nunca** sobrescrever dados originais de preço em memória — acréscimos e reajustes
-  são calculados na exibição, os dados base permanecem intocados
-- **Nunca** inventar dados de preço — usar apenas os valores fornecidos explicitamente
-- **Nunca** misturar responsabilidades entre arquivos JS (dados em `data.js`,
-  render em `render.js`, reajuste em `reajuste.js`)
+- **Nunca** expor `SUPABASE_SERVICE_ROLE_KEY` em nenhum arquivo do frontend,
+  mesmo que ofuscado ou injetado via variável de build
+- **Nunca** sobrescrever dados originais em memória — cálculos derivados (acréscimos,
+  reajustes) são aplicados na exibição, os dados base permanecem intocados
+- **Nunca** alterar a ordem de carregamento dos scripts sem verificar dependências
 
 ### Segurança
 - **Nunca** chamar `service_role` diretamente do frontend
 - **Nunca** pular a verificação de identidade (`auth.getUser()`) antes de operações privilegiadas
-- **Nunca** remover o Turnstile do fluxo de login sem autorização explícita
-- **Nunca** armazenar senhas em texto plano — usar sempre hash SHA-256 no histórico
-- **Nunca** permitir que um usuário exclua ou altere a própria conta via Edge Function
-  (validar `usuario_id !== user.id`)
+- **Nunca** remover o Turnstile do fluxo de login
+- **Nunca** armazenar senhas em texto plano — usar hash SHA-256 no histórico
+- **Nunca** permitir que um usuário exclua ou altere conta alheia sem verificar
+  nível de permissão na Edge Function
+- **Nunca** permitir que um usuário exclua a própria conta (`usuario_id !== user.id`)
 
 ### Deploy
 - **Nunca** commitar o arquivo `.env`
 - **Nunca** usar `--no-verify-jwt` em funções que requerem usuário autenticado
-- **Nunca** adicionar novo domínio externo (script, iframe, fonte) sem atualizar
+- **Nunca** adicionar domínio externo (script, iframe, fonte, API) sem atualizar
   o `Content-Security-Policy` no `vercel.json`
-- **Nunca** alterar a ordem de carregamento dos scripts em `index.html`
-  sem verificar dependências entre eles
 
 ### Banco de dados
-- **Nunca** criar tabelas sem o prefixo `concremtp_`
+- **Nunca** criar tabelas sem o prefixo `[PROJECT_PREFIX]`
 - **Nunca** desabilitar RLS em tabelas de produção
-- **Nunca** usar `ON DELETE SET NULL` em foreign keys críticas — prefer `CASCADE`
+- **Nunca** usar `ON DELETE SET NULL` em foreign keys críticas — preferir `CASCADE`
   ou proteger no nível da aplicação
+- **Nunca** fazer operações de escrita sensíveis diretamente do frontend —
+  sempre via Edge Function com `service_role`
