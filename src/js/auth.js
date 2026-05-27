@@ -373,9 +373,23 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Esqueci senha
   document.getElementById('forgot-password')?.addEventListener('click', async (e) => {
     e.preventDefault();
-    const email = document.getElementById('login-email').value.trim();
-    if (!email) { mostrarErro('Digite seu e-mail primeiro.'); return; }
-    await _sb.auth.resetPasswordForEmail(email);
+    let email = document.getElementById('login-email').value.trim();
+    if (!email) { mostrarErro('Digite seu e-mail ou usuário primeiro.'); return; }
+
+    // Se for username, busca o e-mail correspondente
+    if (!email.includes('@')) {
+      const { data: userRow } = await _sb
+        .from('concremtp_usuarios')
+        .select('email')
+        .eq('username', email.toLowerCase())
+        .eq('ativo', true)
+        .maybeSingle();
+      if (!userRow) { mostrarErro('Usuário não encontrado.'); return; }
+      email = userRow.email;
+    }
+
+    const { error } = await _sb.auth.resetPasswordForEmail(email);
+    if (error) { mostrarErro('Erro ao enviar e-mail. Tente novamente.'); return; }
     mostrarErro('E-mail de recuperação enviado!');
   });
 
