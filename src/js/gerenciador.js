@@ -834,8 +834,7 @@ function _gmCollectChanges() {
           larguras[inp.dataset.colW] = hasMult ? +(v/mult).toFixed(4) : v;
       });
       if (Object.keys(larguras).length) {
-        changes.larguras       = larguras;
-        changes.larguras_antes = larguras_antes;
+        changes.larguras = larguras;
       }
     } else if (tt === 'protect') {
       var inps = row.querySelectorAll('.gm-price-input');
@@ -856,6 +855,7 @@ function _gmCollectChanges() {
         tipo:    row.dataset.gmTableType, subtab:  row.dataset.gmSubtab,
         colecao: row.dataset.gmColecao, grupo: row.dataset.gmGrupo, desc: row.dataset.gmDesc,
         changes: changes,
+        larguras_antes: larguras_antes,
       });
     }
   });
@@ -963,8 +963,7 @@ async function gmExecuteSave() {
     payload.edited.forEach(function(e) {
       var existing = _gmFindDbItem(e);
       if (existing && existing.id) {
-        var upd = Object.assign({}, e.changes, { editado_em: ts, editado_por: uid });
-        ops.push(_sb.from('concremtp_itens_tabela').update(upd).eq('id', existing.id));
+        ops.push(_sb.from('concremtp_itens_tabela').update(e.changes).eq('id', existing.id));
       } else {
         // No DB record yet → INSERT (hardcoded item being overridden)
         var newRow = _gmBuildDbRow(e, uid, ts);
@@ -976,10 +975,12 @@ async function gmExecuteSave() {
     payload.removed.forEach(function(r) {
       var existing = _gmFindDbItem(r);
       if (existing && existing.id)
-        ops.push(_sb.from('concremtp_itens_tabela').update({ ativo: false, editado_em: ts, editado_por: uid }).eq('id', existing.id));
+        ops.push(_sb.from('concremtp_itens_tabela').update({ ativo: false }).eq('id', existing.id));
     });
 
-    await Promise.all(ops);
+    var results = await Promise.all(ops);
+    var firstErr = results.find(function(r) { return r && r.error; });
+    if (firstErr) throw new Error(firstErr.error.message || 'Erro ao salvar no banco.');
 
     // ── Audit log ─────────────────────────────────────────
     try {
@@ -1020,7 +1021,7 @@ async function gmExecuteSave() {
         if (e.tipo !== 'porta' || !e.changes.larguras) continue;
 
         var larg    = e.changes.larguras;
-        var largAnt = e.changes.larguras_antes || {};
+        var largAnt = e.larguras_antes || {};
 
         // Snapshot apenas das larguras que mudaram, no formato {grupo, linha, antes, depois}
         var snapshot = [];
