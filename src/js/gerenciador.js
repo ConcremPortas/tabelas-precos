@@ -963,7 +963,9 @@ async function gmExecuteSave() {
     payload.edited.forEach(function(e) {
       var existing = _gmFindDbItem(e);
       if (existing && existing.id) {
-        ops.push(_sb.from('concremtp_itens_tabela').update(e.changes).eq('id', existing.id));
+        var upd = Object.assign({}, existing, e.changes);
+        delete upd._fromDb; delete upd._dbId; delete upd._criadoEm;
+        ops.push(_sb.from('concremtp_itens_tabela').update(upd).eq('id', existing.id));
       } else {
         // No DB record yet → INSERT (hardcoded item being overridden)
         var newRow = _gmBuildDbRow(e, uid, ts);
@@ -1098,19 +1100,35 @@ async function gmExecuteSave() {
 
 // ── BUILD DB ROW FROM EDIT DESCRIPTOR ────────────────────────────────────────
 function _gmBuildDbRow(e, uid, ts) {
-  var tipo, colecao;
-  if (e.tipo === 'protect') {
+  var tipo, colecao, linha, acabamento;
+
+  if (e.tipo === 'porta') {
+    tipo = 'porta'; colecao = e.colecao || null;
+    linha      = e.desc  || null;   // item.linha
+    acabamento = e.grupo || null;   // grupo.nome
+  } else if (e.tipo === 'protect') {
     var st = e.subtab || '';
     if (st.startsWith('alizar')) { tipo = 'alizar'; colecao = st; }
     else { tipo = 'batente'; colecao = e.colecao || null; }
+    linha      = e.grupo || null;   // grupo.label (espessura)
+    acabamento = e.desc  || null;   // item.acab
   } else if (e.tipo === 'rodape') {
     tipo = 'rodape'; colecao = null;
+    linha      = e.grupo || null;   // grupo.label (espessura)
+    acabamento = e.desc  || null;   // item.acab
+  } else if (e.tipo === 'adicional' || e.tipo === 'ferragem') {
+    tipo = e.tipo; colecao = null;
+    linha      = null;
+    acabamento = e.desc  || null;   // item.item (descrição)
   } else {
     tipo = e.tipo; colecao = e.colecao || null;
+    linha      = e.desc  || null;
+    acabamento = e.grupo || null;
   }
+
   return {
     produto: e.section, canal: e.channel, tipo: tipo,
-    colecao: colecao, linha: e.desc || null, acabamento: e.grupo || null,
+    colecao: colecao, linha: linha, acabamento: acabamento,
     larguras: {}, preco_venda: null, preco_protect: null, preco_regua: null, preco_ml: null,
     ativo: true, criado_por: uid || null, criado_em: ts || new Date().toISOString(),
   };
