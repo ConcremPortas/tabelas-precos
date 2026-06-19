@@ -251,8 +251,9 @@ function aplicarPermissoes() {
     const k = map[btn.dataset.channel];
     if (k) btn.style.display = p[k] === false ? 'none' : '';
   });
-  const pb = document.querySelector('.print-btn');
-  if (pb) pb.style.display = p.imprimir_pdf === false ? 'none' : '';
+  document.querySelectorAll('.print-btn').forEach(pb => {
+    pb.style.display = p.imprimir_pdf === false ? 'none' : '';
+  });
   document.querySelectorAll('.nav-item-usuarios').forEach(b => {
     b.style.display = p.gerenciar_usuarios ? '' : 'none';
   });

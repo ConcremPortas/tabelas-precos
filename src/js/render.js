@@ -616,103 +616,71 @@ function toggleTheme() {
 }
 
 // ── PRINT ───────────────────────────────────────────
-function printSection() {
-  if (currentSection === 'leroyMerlin') { lmImprimirTodos(); return; }
-  const ch  = CHANNELS[currentChannel];
-  const m   = ch.mult;
-  const LOGO = new URL('Logos/logo-cores.png', window.location.href).href;
-  const dateStr = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
-  const CH_PDF = { fabrica: 'FÁBRICA', distribuidora: 'DISTRIBUIDORA', dag: 'DISTRIBUIDORA/DAG', elo: 'ELO DISTRIBUIDORA', suframa: 'ELO SUFRAMA' };
-  const chLabel = CH_PDF[currentChannel] || ch.label.toUpperCase();
-  const SEC_NAMES = {
-    portasLacca: 'Portas LACCA', portasUV: 'Portas UV / Melamínico',
-    portasELO: 'Portas ELO', laccaAcab: 'Batente · Alizar · Rodapé LACCA',
-    melamAcab: 'Batente · Alizar · Rodapé Melamínico', batenteELO: 'Batente & Alizar ELO',
-  };
-  const secTitle = SEC_NAMES[currentSection] || currentSection;
+const _PRINT_SEC_NAMES = {
+  portasLacca: 'Portas LACCA', portasUV: 'Portas UV / Melamínico',
+  portasELO: 'Portas ELO', laccaAcab: 'Batente · Alizar · Rodapé LACCA',
+  melamAcab: 'Batente · Alizar · Rodapé Melamínico', batenteELO: 'Batente · Alizar · Kit ELO',
+};
+const _PRINT_CH_PDF = { fabrica: 'FÁBRICA', distribuidora: 'DISTRIBUIDORA', dag: 'DISTRIBUIDORA/DAG', elo: 'ELO DISTRIBUIDORA', suframa: 'ELO SUFRAMA' };
 
-  // price formatter (standalone — não usa fmt() do outer scope pois vai numa nova janela)
-  function pF(v) { return v != null ? v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'}) : ''; }
+function _printPF(v) { return v != null ? v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : ''; }
 
-  // chunk array into groups of n
-  function chk(arr, n) {
-    const r = [];
-    for (let i = 0; i < arr.length; i += n) r.push(arr.slice(i, i + n));
-    return r;
-  }
+function _printReajusteNote() {
+  try {
+    const rjd = JSON.parse(localStorage.getItem('concrem_reajustes')) || { precosAtuais: {} };
+    const cnt = Object.keys(rjd.precosAtuais).filter(k => Math.abs((rjd.precosAtuais[k]?.mult ?? 1) - 1) > 0.001).length;
+    if (cnt > 0) return `<p class="prjn">* Preços com reajuste aplicado (${cnt} linha(s) com ajuste ativo)</p>`;
+  } catch {}
+  return '';
+}
 
-  // ── acab grouped table (3 widths per row) ──────────────────────────────────
-  function buildAcabRows(section, isRodape) {
+// Monta o corpo (sem cabeçalho/rodapé) de uma seção para o canal atual.
+function buildPrintSectionBody(section) {
+  const pF = _printPF;
+  const m = CHANNELS[currentChannel].mult;
+
+  function chk(arr, n) { const r = []; for (let i = 0; i < arr.length; i += n) r.push(arr.slice(i, i + n)); return r; }
+
+  function buildAcabRows(sec, isRodape) {
     let html = '';
-    for (const block of chk(section.grupos, 3)) {
+    for (const block of chk(sec.grupos, 3)) {
       const maxAcab = Math.max(...block.map(g => g.itens.length));
       html += `<table class="pa" style="page-break-inside:avoid">`;
-
-      // Row 1: width headers
       html += `<tr><td class="pl">LARGURA</td>`;
       block.forEach((g, ci) => {
         const bg = ci % 2 === 0 ? '#8B4513' : '#6B3A2A';
         html += `<td colspan="${maxAcab}" class="pw" style="background:${bg}">${g.label.toUpperCase()}</td>`;
       });
       html += `</tr>`;
-
-      // Row 2: acabamento names
       html += `<tr><td class="pl">ACABAMENTO</td>`;
-      block.forEach(g => {
-        for (let ai = 0; ai < maxAcab; ai++) {
-          const it = g.itens[ai];
-          html += `<td class="pac">${it ? it.acab : ''}</td>`;
-        }
-      });
+      block.forEach(g => { for (let ai = 0; ai < maxAcab; ai++) { const it = g.itens[ai]; html += `<td class="pac">${it ? it.acab : ''}</td>`; } });
       html += `</tr>`;
-
       if (isRodape) {
         html += `<tr><td class="pl">RÉGUA (2,40m)</td>`;
-        block.forEach(g => {
-          for (let ai = 0; ai < maxAcab; ai++) {
-            const it = g.itens[ai];
-            html += `<td class="pp">${it ? pF(it.precoRegua) : ''}</td>`;
-          }
-        });
+        block.forEach(g => { for (let ai = 0; ai < maxAcab; ai++) { const it = g.itens[ai]; html += `<td class="pp">${it ? pF(it.precoRegua) : ''}</td>`; } });
         html += `</tr>`;
         html += `<tr><td class="pl">METRO LINEAR</td>`;
-        block.forEach(g => {
-          for (let ai = 0; ai < maxAcab; ai++) {
-            const it = g.itens[ai];
-            html += `<td class="pp">${it ? pF(it.precoMl) : ''}</td>`;
-          }
-        });
+        block.forEach(g => { for (let ai = 0; ai < maxAcab; ai++) { const it = g.itens[ai]; html += `<td class="pp">${it ? pF(it.precoMl) : ''}</td>`; } });
         html += `</tr>`;
       } else {
         html += `<tr><td class="pl">PREÇO DE VENDA</td>`;
-        block.forEach(g => {
-          for (let ai = 0; ai < maxAcab; ai++) {
-            const it = g.itens[ai];
-            html += `<td class="pp">${it ? pF(it.preco) : ''}</td>`;
-          }
-        });
+        block.forEach(g => { for (let ai = 0; ai < maxAcab; ai++) { const it = g.itens[ai]; html += `<td class="pp">${it ? pF(it.preco) : ''}</td>`; } });
         html += `</tr>`;
         html += `<tr><td class="pl">C/ PROTECT+</td>`;
-        block.forEach(g => {
-          for (let ai = 0; ai < maxAcab; ai++) {
-            const it = g.itens[ai];
-            html += `<td class="pp">${it ? pF(it.protect) : ''}</td>`;
-          }
-        });
+        block.forEach(g => { for (let ai = 0; ai < maxAcab; ai++) { const it = g.itens[ai]; html += `<td class="pp">${it ? pF(it.protect) : ''}</td>`; } });
         html += `</tr>`;
       }
-
       html += `</table><div style="height:3px"></div>`;
     }
     return html;
   }
 
-  function acabBlock(title, subtitle, section, isRodape) {
+  function acabBlock(title, subtitle, sec, isRodape) {
     return `<div class="pblk">`
-         + `<div class="psep">PRODUTO: ${title}</div>`
-         + (subtitle ? `<div class="ptit">${subtitle.toUpperCase()}</div>` : '')
-         + buildAcabRows(section, isRodape)
-         + `</div>`;
+      + `<div class="psep">PRODUTO: ${title}</div>`
+      + (subtitle ? `<div class="ptit">${subtitle.toUpperCase()}</div>` : '')
+      + buildAcabRows(sec, isRodape)
+      + `</div>`;
   }
 
   function kitBlock(kit) {
@@ -722,21 +690,18 @@ function printSection() {
     return h + `</tbody></table>`;
   }
 
-  const PB = '<div class="pgbreak"></div>';
-
   function fullAcabBody(data, tipo) {
-    return acabBlock(`BATENTE ${tipo}`,        data.batente.subtitle,  data.batente,  false)
-         + acabBlock(`ALIZAR ${tipo} — 9mm`,  data.alizar9.subtitle,  data.alizar9,  false)
-         + acabBlock(`ALIZAR ${tipo} — 15mm`, data.alizar15.subtitle, data.alizar15, false)
-         + acabBlock(`RODAPÉ ${tipo}`,         data.rodape.subtitle,   data.rodape,   true)
-         + kitBlock(data.kitCorrer);
+    return acabBlock(`BATENTE ${tipo}`, data.batente.subtitle, data.batente, false)
+      + acabBlock(`ALIZAR ${tipo} — 9mm`, data.alizar9.subtitle, data.alizar9, false)
+      + acabBlock(`ALIZAR ${tipo} — 15mm`, data.alizar15.subtitle, data.alizar15, false)
+      + acabBlock(`RODAPÉ ${tipo}`, data.rodape.subtitle, data.rodape, true)
+      + kitBlock(data.kitCorrer);
   }
 
-  // ── portas table layout ────────────────────────────────────────────────────
   function buildPortasBody(data, extraCol) {
     const widths = extraCol
-      ? (data.colecoes[0]?.grupos[0]?.itens[0]?.p?.length === 6 ? [60,70,80,90,100,110] : [60,70,80,90,100])
-      : [60,70,80,90,100];
+      ? (data.colecoes[0]?.grupos[0]?.itens[0]?.p?.length === 6 ? [60, 70, 80, 90, 100, 110] : [60, 70, 80, 90, 100])
+      : [60, 70, 80, 90, 100];
     let html = '';
     for (const col of data.colecoes) {
       html += `<div class="pblk">`;
@@ -748,10 +713,7 @@ function printSection() {
         html += `<tr class="ppas"><td colspan="${1 + widths.length}">${g.nome}</td></tr>`;
         for (const it of g.itens) {
           html += `<tr><td>${it.linha}</td>`;
-          for (let wi = 0; wi < widths.length; wi++) {
-            const v = it.p[wi];
-            html += `<td class="pp">${v != null ? pF(v) : '—'}</td>`;
-          }
+          for (let wi = 0; wi < widths.length; wi++) { const v = it.p[wi]; html += `<td class="pp">${v != null ? pF(v) : '—'}</td>`; }
           html += `</tr>`;
         }
       }
@@ -772,151 +734,163 @@ function printSection() {
     return html;
   }
 
-  // ── build main body ────────────────────────────────────────────────────────
-  let body = '';
-  switch(currentSection) {
-    case 'laccaAcab':
-      body = fullAcabBody(scaleAcabBase(laccaAcabBase), 'LACCA');
-      break;
-    case 'melamAcab':
-      body = fullAcabBody(scaleAcabBase(melamAcabBase), 'MELAMÍNICO');
-      break;
+  switch (section) {
+    case 'laccaAcab': return fullAcabBody(scaleAcabBase(laccaAcabBase), 'LACCA');
+    case 'melamAcab': return fullAcabBody(scaleAcabBase(melamAcabBase), 'MELAMÍNICO');
     case 'batenteELO': {
-      const base = eloAcabBase.batente;
-      const s = { ...base, grupos: base.grupos.map(g => ({
-        ...g, itens: g.itens.map(it => ({ ...it, preco: it.preco * m, protect: it.protect * m }))
-      }))};
-      body = acabBlock('BATENTE ELO', s.subtitle, s, false);
-      break;
+      const sc = g => ({ ...g, itens: g.itens.map(it => ({ ...it, preco: it.preco * m, protect: it.protect * m })) });
+      const d = {
+        batente:  { ...eloAcabBase.batente,  grupos: eloAcabBase.batente.grupos.map(sc) },
+        alizar9:  { ...eloAcabBase.alizar9,  grupos: eloAcabBase.alizar9.grupos.map(sc) },
+        alizar15: { ...eloAcabBase.alizar15, grupos: eloAcabBase.alizar15.grupos.map(sc) },
+        kitCorrer:{ ...eloAcabBase.kitCorrer, itens: eloAcabBase.kitCorrer.itens.map(it => ({ ...it, preco: it.preco * m })) },
+      };
+      return acabBlock('BATENTE ELO', d.batente.subtitle, d.batente, false)
+        + acabBlock('ALIZAR ELO — 9mm', d.alizar9.subtitle, d.alizar9, false)
+        + acabBlock('ALIZAR ELO — 15mm', d.alizar15.subtitle, d.alizar15, false)
+        + kitBlock(d.kitCorrer);
     }
     case 'portasLacca': {
       const k = portasLaccaData[currentChannel] ? currentChannel : 'distribuidora';
-      body = buildPortasBody(portasLaccaData[k], false);
-      break;
+      return buildPortasBody(portasLaccaData[k], false);
     }
     case 'portasUV': {
       const k = portasUVData[currentChannel] ? currentChannel : 'distribuidora';
-      body = buildPortasBody(portasUVData[k], false);
-      break;
+      return buildPortasBody(portasUVData[k], false);
     }
     case 'portasELO': {
       const sd = {
         ...portasELOData,
         colecoes: portasELOData.colecoes.map(col => ({
           ...col, grupos: col.grupos.map(g => ({
-            ...g, itens: g.itens.map(it => ({
-              ...it, p: it.p.map(v => v !== null ? +(v * m).toFixed(2) : null)
-            }))
+            ...g, itens: g.itens.map(it => ({ ...it, p: it.p.map(v => v !== null ? +(v * m).toFixed(2) : null) }))
           }))
         })),
         adicionais: portasELOData.adicionais.map(a => ({ ...a, p: +(a.p * m).toFixed(2) })),
-        ferragens:  portasELOData.ferragens.map(a  => ({ ...a, p: +(a.p * m).toFixed(2) })),
+        ferragens:  portasELOData.ferragens.map(a => ({ ...a, p: +(a.p * m).toFixed(2) })),
       };
-      body = buildPortasBody(sd, true);
-      break;
+      return buildPortasBody(sd, true);
     }
   }
+  return '';
+}
 
-  // reajuste note
-  let rjNote = '';
-  try {
-    const rjd = JSON.parse(localStorage.getItem('concrem_reajustes')) || { precosAtuais: {} };
-    const cnt = Object.keys(rjd.precosAtuais).filter(k => Math.abs((rjd.precosAtuais[k]?.mult ?? 1) - 1) > 0.001).length;
-    if (cnt > 0) rjNote = `<p class="prjn">* Preços com reajuste aplicado (${cnt} linha(s) com ajuste ativo)</p>`;
-  } catch {}
-
-  const html = `<!DOCTYPE html>
-<html lang="pt-BR"><head><meta charset="UTF-8">
-<title>${secTitle} — ${chLabel}</title>
-<style>
+function _printStyles() {
+  return `
 * { margin:0; padding:0; box-sizing:border-box; }
 body { font-family:Arial,sans-serif; font-size:9px; color:#1a1a1a; background:#fff; }
 @page { size:A4 portrait; margin:8mm 10mm; }
 table { border-collapse:collapse; }
-
-/* page header */
 .phdr { width:100%; margin-bottom:7px; }
 .phdr td { padding:0 6px 5px; border-bottom:2.5px solid #1a5c2a; vertical-align:middle; }
 .phdr-logo { width:90px; } .phdr-logo img { height:30px; }
 .phdr-title { text-align:center; font-size:13px; font-weight:bold; text-transform:uppercase; }
 .phdr-chan { text-align:right; font-size:11px; font-weight:bold; color:#1a5c2a; text-transform:uppercase; white-space:nowrap; }
-
-/* separators — page-break-after:avoid gruda o título ao conteúdo abaixo */
 .psep { background:#1a252f; color:#fff; font-size:9.5px; font-weight:bold; text-align:center;
-        padding:3px 8px; margin:7px 0 3px;
-        page-break-after:avoid; break-after:avoid;
+        padding:3px 8px; margin:7px 0 3px; page-break-after:avoid; break-after:avoid;
         -webkit-print-color-adjust:exact; print-color-adjust:exact; }
 .ptit { background:#e0e0e0; color:#222; font-size:8px; font-weight:bold; text-align:center;
-        padding:2px 8px; margin:2px 0 3px;
-        page-break-after:avoid; break-after:avoid;
+        padding:2px 8px; margin:2px 0 3px; page-break-after:avoid; break-after:avoid;
         -webkit-print-color-adjust:exact; print-color-adjust:exact; }
 .pcolhdr { background:#1a5c2a; color:#fff; font-size:9.5px; font-weight:bold; text-align:center;
-           padding:3px 8px; margin:6px 0 2px;
-           page-break-after:avoid; break-after:avoid;
+           padding:3px 8px; margin:6px 0 2px; page-break-after:avoid; break-after:avoid;
            -webkit-print-color-adjust:exact; print-color-adjust:exact; }
-
-/* acab grouped table */
 .pa { border-collapse:collapse; width:100%; margin-bottom:2px; page-break-inside:avoid; }
 .pa td { border:0.5px solid #bbb; padding:2px 4px; line-height:1.3; vertical-align:middle; }
 .pw { color:#fff; font-weight:bold; text-align:center; font-size:8.5px;
       -webkit-print-color-adjust:exact; print-color-adjust:exact; }
-.pl { font-weight:bold; font-size:8px; color:#333; background:#f0f0f0;
-      white-space:nowrap; min-width:88px;
+.pl { font-weight:bold; font-size:8px; color:#333; background:#f0f0f0; white-space:nowrap; min-width:88px;
       -webkit-print-color-adjust:exact; print-color-adjust:exact; }
 .pac { font-size:7.5px; text-align:center; color:#444; background:#fafafa;
        -webkit-print-color-adjust:exact; print-color-adjust:exact; }
 .pp { text-align:right; font-weight:bold; color:#c00000; font-size:8.5px; white-space:nowrap;
       -webkit-print-color-adjust:exact; print-color-adjust:exact; }
-
-/* portas table */
 .ppt { border-collapse:collapse; width:100%; margin-bottom:3px; }
-.ppt th { background:#2c3e50; color:#fff; padding:2px 5px; text-align:center;
-          font-size:8px; border:0.5px solid #444;
+.ppt th { background:#2c3e50; color:#fff; padding:2px 5px; text-align:center; font-size:8px; border:0.5px solid #444;
           -webkit-print-color-adjust:exact; print-color-adjust:exact; }
 .ppt td { border:0.5px solid #ccc; padding:2px 4px; font-size:8px; }
 .ppas { page-break-after:avoid; break-after:avoid; }
 .ppas td { background:#e8f5e9; color:#1a5c2a; font-weight:bold; font-size:8px; padding:2px 5px;
            -webkit-print-color-adjust:exact; print-color-adjust:exact; }
-
-/* simple table */
 .pst { border-collapse:collapse; width:auto; min-width:280px; margin-bottom:4px; }
-.pst th { background:#2c3e50; color:#fff; padding:2px 8px; font-size:8px;
-          border:0.5px solid #444;
+.pst th { background:#2c3e50; color:#fff; padding:2px 8px; font-size:8px; border:0.5px solid #444;
           -webkit-print-color-adjust:exact; print-color-adjust:exact; }
 .pst td { border:0.5px solid #ccc; padding:2px 6px; font-size:8px; }
-
-/* page break */
 .pgbreak { page-break-before:always; break-before:page; }
-/* bloco de produto: só agrupa visualmente, sem quebra forçada */
 .pblk { margin-bottom:6px; }
-
-/* footer */
 .pftr { margin-top:8px; border-top:1px solid #ccc; padding-top:4px; text-align:center; }
 .pftr img { height:18px; opacity:.5; }
 .pftr-date { font-size:7px; color:#888; margin-top:2px; }
-.prjn { font-size:7.5px; color:#555; font-style:italic; text-align:left; margin-bottom:3px; }
-</style>
-</head>
-<body>
-<table class="phdr" width="100%"><tr>
+.prjn { font-size:7.5px; color:#555; font-style:italic; text-align:left; margin-bottom:3px; }`;
+}
+
+function _printHeader(secTitle, chLabel, LOGO) {
+  return `<table class="phdr" width="100%"><tr>
   <td class="phdr-logo"><img src="${LOGO}" alt="CONCREM"></td>
   <td class="phdr-title">PRODUTO: ${secTitle.toUpperCase()}</td>
   <td class="phdr-chan">${chLabel}</td>
-</tr></table>
-${body}
-<div class="pftr">
+</tr></table>`;
+}
+
+function _printFooter(LOGO, dateStr, rjNote) {
+  return `<div class="pftr">
   ${rjNote}
   <img src="${LOGO}" alt="CONCREM">
   <div class="pftr-date">${dateStr}</div>
-</div>
-</body></html>`;
+</div>`;
+}
 
+function _printOpenDoc(title, inner) {
+  const html = `<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="UTF-8"><title>${title}</title>
+<style>${_printStyles()}</style></head>
+<body>${inner}</body></html>`;
   const win = window.open('', '_blank', 'width=1200,height=800,menubar=no,toolbar=no,location=no,status=no');
   if (!win) { alert('Popup bloqueado. Permita popups para este site e tente novamente.'); return; }
   win.document.write(html);
   win.document.close();
   win.onload = () => { win.focus(); win.print(); };
 }
+
+function printSection() {
+  if (currentSection === 'leroyMerlin') { lmImprimirTodos(); return; }
+  const ch = CHANNELS[currentChannel];
+  const LOGO = new URL('Logos/logo-cores.png', window.location.href).href;
+  const dateStr = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
+  const chLabel = _PRINT_CH_PDF[currentChannel] || ch.label.toUpperCase();
+  const secTitle = _PRINT_SEC_NAMES[currentSection] || currentSection;
+  const body = buildPrintSectionBody(currentSection);
+  if (!body) { alert('Esta seção não tem tabela para imprimir.'); return; }
+  const inner = _printHeader(secTitle, chLabel, LOGO) + body + _printFooter(LOGO, dateStr, _printReajusteNote());
+  _printOpenDoc(`${secTitle} — ${chLabel}`, inner);
+}
+
+// Imprime TODAS as tabelas do canal atual em um único PDF.
+function printAll() {
+  if (currentSection === 'leroyMerlin') { lmImprimirTodos(); return; }
+  const ch = CHANNELS[currentChannel];
+  const LOGO = new URL('Logos/logo-cores.png', window.location.href).href;
+  const dateStr = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
+  const chLabel = _PRINT_CH_PDF[currentChannel] || ch.label.toUpperCase();
+  const isEloChannel = currentChannel === 'elo' || currentChannel === 'suframa';
+  const sections = isEloChannel
+    ? ['portasELO', 'batenteELO']
+    : ['portasLacca', 'portasUV', 'laccaAcab', 'melamAcab'];
+
+  let inner = '';
+  let first = true;
+  for (const sec of sections) {
+    const body = buildPrintSectionBody(sec);
+    if (!body) continue;
+    const secTitle = _PRINT_SEC_NAMES[sec] || sec;
+    inner += (first ? '' : '<div class="pgbreak"></div>') + _printHeader(secTitle, chLabel, LOGO) + body;
+    first = false;
+  }
+  if (!inner) { alert('Nada para imprimir neste canal.'); return; }
+  inner += _printFooter(LOGO, dateStr, _printReajusteNote());
+  _printOpenDoc(`Tabela completa — ${chLabel}`, inner);
+}
+
 
 // ── DATE ────────────────────────────────────────────
 (function setDate() {

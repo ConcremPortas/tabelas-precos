@@ -273,9 +273,13 @@
         <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
         <input type="search" id="search-input" placeholder="Filtrar tabela…" oninput="onSearch(this.value)">
       </div>
-      <button class="print-btn" onclick="printSection()" title="Imprimir tabela">
+      <button class="print-btn" onclick="printSection()" title="Imprimir a tabela atual">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
         Imprimir
+      </button>
+      <button class="print-btn print-all-btn" onclick="printAll()" title="Imprimir todas as tabelas do canal atual">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        Imprimir Tudo
       </button>
       <div class="header-sep"></div>
       <span class="date-badge" id="date-badge"></span>
