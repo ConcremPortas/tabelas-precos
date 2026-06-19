@@ -1,9 +1,10 @@
 // ── CHANNELS ──────────────────────────────────────────────────
 const CHANNELS = {
   fabrica:       { label: 'Fábrica',                 mult: 1.00, cls: 'ch-fabrica' },
-  distribuidora: { label: 'Distribuidora (DAG 30%)',  mult: 1.30, cls: 'ch-distribuidora' },
-  dag:           { label: 'DAG',                     mult: 1.20, cls: 'ch-dag' },
-  elo:           { label: 'ELO / Distribuidora ELO',  mult: 1.15, cls: 'ch-elo' },
+  distribuidora: { label: 'Distribuidora (15%)',  mult: 1.15, cls: 'ch-distribuidora' },
+  dag:           { label: 'DAG (30%)',                     mult: 1.30, cls: 'ch-dag' },
+  elo:           { label: 'ELO Distribuidora',        mult: 1.00, cls: 'ch-elo' },
+  suframa:       { label: 'ELO Suframa',              mult: 1.024, cls: 'ch-suframa' },
 };
 
 // ── PORTAS LACCA DATA ─────────────────────────────────────────
@@ -14,19 +15,19 @@ const portasLaccaData = {
         nome: 'ESSENZIALE', sub: 'HDF 3mm · 35mm espessura',
         grupos: [
           { nome: 'MEL LACCA BIANCO', tipo: 'bianco', itens: [
-            { linha: 'COLMEIA — SARRAFO 3mm', p: [176.49, 202.30, 228.12, 284.03, 359.52] },
-            { linha: 'SARRAFO 6mm',           p: [186.08, 213.50, 240.93, 300.05, 379.85] },
-            { linha: 'SÓLIDA',                p: [267.44, 293.25, 319.07, 374.98, 450.47] },
+            { linha: 'COLMEIA — SARRAFO 3mm', p: [194.58, 223.04, 251.51, 313.14, 396.37] },
+            { linha: 'SARRAFO 6mm',           p: [205.15, 235.39, 265.62, 330.8, 418.78] },
+            { linha: 'SÓLIDA',                p: [294.85, 323.31, 351.78, 413.42, 496.64] },
           ]},
           { nome: 'MEL LACCA FENDI / GRAFITE / NERO / CAPUCCINO / BLUE E GREEN', tipo: 'multi', itens: [
-            { linha: 'COLMEIA — SARRAFO 3mm', p: [202.66, 232.30, 261.95, 326.15, 412.84] },
-            { linha: 'SARRAFO 6mm',           p: [213.66, 245.17, 276.65, 344.54, 436.17] },
-            { linha: 'SÓLIDA',                p: [293.61, 323.25, 352.90, 417.10, 503.79] },
+            { linha: 'COLMEIA — SARRAFO 3mm', p: [223.43, 256.11, 288.8, 359.58, 455.16] },
+            { linha: 'SARRAFO 6mm',           p: [235.56, 270.3, 305.01, 379.86, 480.88] },
+            { linha: 'SÓLIDA',                p: [323.71, 356.38, 389.07, 459.85, 555.43] },
           ]},
           { nome: 'LACCA PET BLANCO', tipo: 'pet', itens: [
-            { linha: 'COLMEIA — SARRAFO 3mm', p: [211.78, 242.75, 273.15, 340.83, 431.41] },
-            { linha: 'SARRAFO 6mm',           p: [223.27, 256.20, 289.10, 360.04, 455.80] },
-            { linha: 'SÓLIDA',                p: [302.73, 333.70, 364.10, 431.78, 522.36] },
+            { linha: 'COLMEIA — SARRAFO 3mm', p: [233.49, 267.63, 301.15, 375.77, 475.63] },
+            { linha: 'SARRAFO 6mm',           p: [246.16, 282.46, 318.73, 396.94, 502.52] },
+            { linha: 'SÓLIDA',                p: [333.76, 367.9, 401.42, 476.04, 575.9] },
           ]},
         ]
       },
@@ -34,19 +35,19 @@ const portasLaccaData = {
         nome: 'INNOVAZIONE', sub: 'HDF Superflora 3mm · 35mm',
         grupos: [
           { nome: 'MEL LACCA BIANCO', tipo: 'bianco', itens: [
-            { linha: 'COLMEIA — SARRAFO 3mm', p: [195.29, 224.26, 253.22, 315.40, 399.36] },
-            { linha: 'SARRAFO 6mm',           p: [204.88, 235.45, 266.03, 331.40, 419.68] },
-            { linha: 'SÓLIDA',                p: [286.24, 315.21, 344.17, 406.35, 490.31] },
+            { linha: 'COLMEIA — SARRAFO 3mm', p: [215.31, 247.24, 279.18, 347.73, 440.3] },
+            { linha: 'SARRAFO 6mm',           p: [225.88, 259.58, 293.3, 365.37, 462.7] },
+            { linha: 'SÓLIDA',                p: [315.58, 347.52, 379.45, 448, 540.57] },
           ]},
           { nome: 'MEL LACCA FENDI / GRAFITE / NERO / BLUE E GREEN', tipo: 'multi', itens: [
-            { linha: 'COLMEIA — SARRAFO 3mm', p: [224.24, 257.52, 290.77, 362.18, 458.58] },
-            { linha: 'SARRAFO 6mm',           p: [235.25, 270.36, 305.48, 380.55, 481.92] },
-            { linha: 'SÓLIDA',                p: [315.19, 348.47, 381.72, 453.13, 549.53] },
+            { linha: 'COLMEIA — SARRAFO 3mm', p: [247.22, 283.92, 320.57, 399.3, 505.58] },
+            { linha: 'SARRAFO 6mm',           p: [259.36, 298.07, 336.79, 419.56, 531.32] },
+            { linha: 'SÓLIDA',                p: [347.5, 384.19, 420.85, 499.58, 605.86] },
           ]},
           { nome: 'LACCA PET BLANCO', tipo: 'pet', itens: [
-            { linha: 'COLMEIA — SARRAFO 3mm', p: [234.32, 269.10, 303.85, 378.48, 479.21] },
-            { linha: 'SARRAFO 6mm',           p: [245.84, 282.53, 319.22, 397.67, 503.60] },
-            { linha: 'SÓLIDA',                p: [325.27, 360.05, 394.80, 469.43, 570.16] },
+            { linha: 'COLMEIA — SARRAFO 3mm', p: [258.34, 296.68, 334.99, 417.27, 528.33] },
+            { linha: 'SARRAFO 6mm',           p: [271.04, 311.49, 351.94, 438.43, 555.22] },
+            { linha: 'SÓLIDA',                p: [358.61, 396.96, 435.27, 517.55, 628.6] },
           ]},
         ]
       },
@@ -54,16 +55,16 @@ const portasLaccaData = {
         nome: 'SOFISTICATO', sub: 'HDF Superflora 3mm · 40mm',
         grupos: [
           { nome: 'MEL LACCA BIANCO', tipo: 'bianco', itens: [
-            { linha: 'SARRAFO 6mm', p: [298.98, 344.98, 390.99, 487.51, 617.84] },
-            { linha: 'SÓLIDA',     p: [389.93, 435.93, 481.94, 578.46, 708.79] },
+            { linha: 'SARRAFO 6mm', p: [329.63, 380.34, 431.07, 537.48, 681.17] },
+            { linha: 'SÓLIDA',     p: [429.9, 480.62, 531.34, 637.75, 781.44] },
           ]},
           { nome: 'MEL LACCA FENDI / GRAFITE / NERO / BLUE E GREEN', tipo: 'multi', itens: [
-            { linha: 'SARRAFO 6mm', p: [314.72, 363.14, 411.57, 513.17, 650.36] },
-            { linha: 'SÓLIDA',     p: [405.67, 454.09, 502.52, 604.12, 741.31] },
+            { linha: 'SARRAFO 6mm', p: [346.98, 400.36, 453.76, 565.77, 717.02] },
+            { linha: 'SÓLIDA',     p: [447.25, 500.63, 554.03, 666.04, 817.29] },
           ]},
           { nome: 'LACCA PET BLANCO', tipo: 'pet', itens: [
-            { linha: 'SARRAFO 6mm', p: [330.46, 381.30, 432.15, 538.83, 682.88] },
-            { linha: 'SÓLIDA',     p: [421.41, 472.25, 523.10, 629.78, 773.83] },
+            { linha: 'SARRAFO 6mm', p: [364.33, 420.38, 476.44, 594.06, 752.87] },
+            { linha: 'SÓLIDA',     p: [464.6, 520.65, 576.72, 694.33, 853.15] },
           ]},
         ]
       },
@@ -89,19 +90,19 @@ const portasLaccaData = {
         nome: 'ESSENZIALE', sub: 'HDF 3mm · 35mm espessura',
         grupos: [
           { nome: 'MEL LACCA BIANCO', tipo: 'bianco', itens: [
-            { linha: 'COLMEIA — SARRAFO 3mm', p: [229.44, 263.00, 296.56, 369.24, 467.37] },
-            { linha: 'SARRAFO 6mm',           p: [241.90, 277.55, 313.21, 390.06, 493.80] },
-            { linha: 'SÓLIDA',                p: [347.67, 381.23, 414.80, 487.48, 585.61] },
+            { linha: 'COLMEIA — SARRAFO 3mm', p: [223.77, 256.5, 289.24, 360.11, 455.83] },
+            { linha: 'SARRAFO 6mm',           p: [235.92, 270.7, 305.46, 380.42, 481.6] },
+            { linha: 'SÓLIDA',                p: [339.08, 371.81, 404.55, 475.43, 571.14] },
           ]},
           { nome: 'MEL LACCA FENDI / GRAFITE / NERO / CAPUCCINO / BLUE E GREEN', tipo: 'multi', itens: [
-            { linha: 'COLMEIA — SARRAFO 3mm', p: [263.46, 301.99, 340.54, 424.00, 536.69] },
-            { linha: 'SARRAFO 6mm',           p: [277.76, 318.72, 359.64, 447.90, 567.02] },
-            { linha: 'SÓLIDA',                p: [381.69, 420.23, 458.77, 542.23, 654.93] },
+            { linha: 'COLMEIA — SARRAFO 3mm', p: [256.94, 294.53, 332.12, 413.52, 523.43] },
+            { linha: 'SARRAFO 6mm',           p: [270.89, 310.84, 350.76, 436.84, 553.01] },
+            { linha: 'SÓLIDA',                p: [372.27, 409.84, 447.43, 528.83, 638.74] },
           ]},
           { nome: 'LACCA PET BLANCO', tipo: 'pet', itens: [
-            { linha: 'COLMEIA — SARRAFO 3mm', p: [275.31, 315.57, 355.09, 443.08, 560.83] },
-            { linha: 'SARRAFO 6mm',           p: [290.25, 333.06, 375.83, 468.05, 592.54] },
-            { linha: 'SÓLIDA',                p: [393.55, 433.81, 473.33, 561.31, 679.07] },
+            { linha: 'COLMEIA — SARRAFO 3mm', p: [268.51, 307.77, 346.32, 432.14, 546.97] },
+            { linha: 'SARRAFO 6mm',           p: [283.08, 324.83, 366.54, 456.48, 577.9] },
+            { linha: 'SÓLIDA',                p: [383.82, 423.08, 461.63, 547.45, 662.29] },
           ]},
         ]
       },
@@ -109,19 +110,19 @@ const portasLaccaData = {
         nome: 'INNOVAZIONE', sub: 'HDF Superflora 3mm · 35mm',
         grupos: [
           { nome: 'MEL LACCA BIANCO', tipo: 'bianco', itens: [
-            { linha: 'COLMEIA — SARRAFO 3mm', p: [253.88, 291.53, 329.19, 410.02, 519.17] },
-            { linha: 'SARRAFO 6mm',           p: [266.34, 306.08, 345.84, 430.82, 545.59] },
-            { linha: 'SÓLIDA',                p: [372.11, 409.77, 447.42, 528.26, 637.40] },
+            { linha: 'COLMEIA — SARRAFO 3mm', p: [247.61, 284.33, 321.06, 399.89, 506.35] },
+            { linha: 'SARRAFO 6mm',           p: [259.76, 298.52, 337.29, 420.18, 532.1] },
+            { linha: 'SÓLIDA',                p: [362.92, 399.65, 436.37, 515.2, 621.66] },
           ]},
           { nome: 'MEL LACCA FENDI / GRAFITE / NERO / BLUE E GREEN', tipo: 'multi', itens: [
-            { linha: 'COLMEIA — SARRAFO 3mm', p: [291.51, 334.78, 378.00, 470.83, 596.15] },
-            { linha: 'SARRAFO 6mm',           p: [305.83, 351.47, 397.12, 494.72, 626.50] },
-            { linha: 'SÓLIDA',                p: [409.75, 453.01, 496.24, 589.07, 714.39] },
+            { linha: 'COLMEIA — SARRAFO 3mm', p: [284.3, 326.51, 368.66, 459.2, 581.42] },
+            { linha: 'SARRAFO 6mm',           p: [298.26, 342.78, 387.31, 482.49, 611.02] },
+            { linha: 'SÓLIDA',                p: [399.62, 441.82, 483.98, 574.52, 696.74] },
           ]},
           { nome: 'LACCA PET BLANCO', tipo: 'pet', itens: [
-            { linha: 'COLMEIA — SARRAFO 3mm', p: [304.62, 349.83, 395.01, 492.02, 622.97] },
-            { linha: 'SARRAFO 6mm',           p: [319.59, 367.29, 414.99, 516.97, 654.68] },
-            { linha: 'SÓLIDA',                p: [422.85, 468.07, 513.24, 610.26, 741.21] },
+            { linha: 'COLMEIA — SARRAFO 3mm', p: [297.09, 341.18, 385.24, 479.86, 607.58] },
+            { linha: 'SARRAFO 6mm',           p: [311.7, 358.21, 404.73, 504.19, 638.5] },
+            { linha: 'SÓLIDA',                p: [412.4, 456.5, 500.56, 595.18, 722.89] },
           ]},
         ]
       },
@@ -129,16 +130,16 @@ const portasLaccaData = {
         nome: 'SOFISTICATO', sub: 'HDF Superflora 3mm · 40mm',
         grupos: [
           { nome: 'MEL LACCA BIANCO', tipo: 'bianco', itens: [
-            { linha: 'SARRAFO 6mm', p: [388.68, 448.48, 508.29, 633.76, 803.19] },
-            { linha: 'SÓLIDA',     p: [506.91, 566.71, 626.52, 752.00, 921.43] },
+            { linha: 'SARRAFO 6mm', p: [379.07, 437.39, 495.73, 618.1, 783.35] },
+            { linha: 'SÓLIDA',     p: [494.38, 552.71, 611.04, 733.41, 898.66] },
           ]},
           { nome: 'MEL LACCA FENDI / GRAFITE / NERO / BLUE E GREEN', tipo: 'multi', itens: [
-            { linha: 'SARRAFO 6mm', p: [409.14, 472.08, 535.04, 667.12, 845.47] },
-            { linha: 'SÓLIDA',     p: [527.37, 590.32, 653.28, 785.36, 963.70] },
+            { linha: 'SARRAFO 6mm', p: [399.03, 460.41, 521.82, 650.64, 824.57] },
+            { linha: 'SÓLIDA',     p: [514.34, 575.72, 637.13, 765.95, 939.88] },
           ]},
           { nome: 'LACCA PET BLANCO', tipo: 'pet', itens: [
-            { linha: 'SARRAFO 6mm', p: [429.59, 495.69, 561.79, 700.48, 887.74] },
-            { linha: 'SÓLIDA',     p: [547.83, 613.92, 680.03, 818.71, 1005.98] },
+            { linha: 'SARRAFO 6mm', p: [418.98, 483.44, 547.91, 683.17, 865.8] },
+            { linha: 'SÓLIDA',     p: [534.29, 598.75, 663.23, 798.48, 981.12] },
           ]},
         ]
       },
@@ -159,34 +160,29 @@ const portasLaccaData = {
     ]
   },
 };
-portasLaccaData.dag = portasLaccaData.distribuidora;
+portasLaccaData.dag = {
+  colecoes: portasLaccaData.fabrica.colecoes.map(function (c) {
+    return { nome: c.nome, sub: c.sub, grupos: c.grupos.map(function (g) {
+      return { nome: g.nome, tipo: g.tipo, itens: g.itens.map(function (it) {
+        return { linha: it.linha, p: it.p.map(function (v) { return +(v * 1.30).toFixed(2); }) };
+      }) };
+    }) };
+  }),
+  adicionais: portasLaccaData.distribuidora.adicionais,
+  ferragens: portasLaccaData.distribuidora.ferragens,
+};
 
-// ── PORTAS ELO DATA (canal ELO / Distribuidora, 6 larguras) ──────────────
+// ── PORTAS ELO DATA (estrutura PDF: COLMEIA, CURUPIXA/BRANCO · ELO Distribuidora base) ──
 const portasELOData = {
   colecoes: [
     {
-      nome: 'ESSENZIALE', sub: 'HDF 3mm · 35mm espessura',
+      nome: 'ELO / SUFRAMA', sub: 'COLMEIA — Sarrafo 3mm · HDF Superflora',
       grupos: [
-        { nome: 'ELO BRANCO', tipo: 'bianco', itens: [
+        { nome: 'ELO CURUPIXA', tipo: 'curupixa', itens: [
           { linha: 'COLMEIA — SARRAFO 3mm', p: [215.04, 215.04, 215.04, 261.37, 330.58, 380.18] },
-          { linha: 'SARRAFO 6mm',           p: [229.02, 229.02, 229.02, 278.36, null,   null  ] },
         ]},
-        { nome: 'ELO CURUPIXA', tipo: 'curupixa', itens: [
-          { linha: 'COLMEIA — SARRAFO 3mm', p: [221.49, 221.49, 221.49, 269.21, 340.50, 391.58] },
-          { linha: 'SARRAFO 6mm',           p: [235.89, 235.89, 235.89, 286.71, null,   null  ] },
-        ]},
-      ]
-    },
-    {
-      nome: 'INNOVAZIONE', sub: 'HDF Superflora 3mm · 35mm',
-      grupos: [
         { nome: 'ELO BRANCO', tipo: 'bianco', itens: [
-          { linha: 'COLMEIA — SARRAFO 3mm', p: [240.85, 240.85, 240.85, 292.73, null, null] },
-          { linha: 'SARRAFO 6mm',           p: [256.50, 256.50, 256.50, 311.76, null, null] },
-        ]},
-        { nome: 'ELO CURUPIXA', tipo: 'curupixa', itens: [
-          { linha: 'COLMEIA — SARRAFO 3mm', p: [252.89, 252.89, 252.89, 307.37, null, null] },
-          { linha: 'SARRAFO 6mm',           p: [269.33, 269.33, 269.33, 327.35, null, null] },
+          { linha: 'COLMEIA — SARRAFO 3mm', p: [221.49, 221.49, 221.49, 269.21, 340.50, 391.58] },
         ]},
       ]
     },
@@ -207,49 +203,116 @@ const portasELOData = {
   ],
 };
 
-// ── BATENTE ELO DATA (canal ELO / Distribuidora) ─────────────────────────
+// ── BATENTE / ALIZAR / KIT ELO DATA (ELO Distribuidora base · mult do canal no render) ──
 const eloAcabBase = {
   batente: {
     title: 'Batente ELO', subtitle: '30mm MDF Superflora',
     grupos: [
-      { label: '5,5 cm',   itens: [
-        { acab: 'ELO BRANCO',    preco: 101.94, protect: 123.49 },
-        { acab: 'ELO CURUPIXÁ', preco: 104.99, protect: 126.55 },
+      { label: '5,5 cm', itens: [
+        { acab: 'ELO BRANCO',   preco: 101.94, protect: 123.49 },
+        { acab: 'ELO CURUPIXÁ', preco: 105.00, protect: 126.55 },
       ]},
-      { label: '6,5 cm',   itens: [
-        { acab: 'ELO BRANCO',    preco: 114.17, protect: 135.73 },
+      { label: '6,5 cm', itens: [
+        { acab: 'ELO BRANCO',   preco: 114.17, protect: 135.73 },
         { acab: 'ELO CURUPIXÁ', preco: 117.59, protect: 139.15 },
       ]},
-      { label: '7,5 cm',   itens: [
-        { acab: 'ELO BRANCO',    preco: 127.87, protect: 149.43 },
+      { label: '7,5 cm', itens: [
+        { acab: 'ELO BRANCO',   preco: 127.87, protect: 149.43 },
         { acab: 'ELO CURUPIXÁ', preco: 131.71, protect: 153.26 },
       ]},
-      { label: '8,5 cm',   itens: [
-        { acab: 'ELO BRANCO',    preco: 143.21, protect: 183.79 },
+      { label: '8,5 cm', itens: [
+        { acab: 'ELO BRANCO',   preco: 143.21, protect: 183.79 },
         { acab: 'ELO CURUPIXÁ', preco: 147.51, protect: 188.08 },
       ]},
-      { label: '10 cm',    itens: [
-        { acab: 'ELO BRANCO',    preco: 160.40, protect: 200.97 },
+      { label: '10 cm', itens: [
+        { acab: 'ELO BRANCO',   preco: 160.40, protect: 200.97 },
         { acab: 'ELO CURUPIXÁ', preco: 165.21, protect: 205.78 },
       ]},
-      { label: '12 cm',    itens: [
-        { acab: 'ELO BRANCO',    preco: 179.65, protect: 232.90 },
+      { label: '12 cm', itens: [
+        { acab: 'ELO BRANCO',   preco: 179.65, protect: 232.90 },
         { acab: 'ELO CURUPIXÁ', preco: 185.04, protect: 238.29 },
       ]},
       { label: '14/15 cm', itens: [
-        { acab: 'ELO BRANCO',    preco: 224.56, protect: 277.82 },
+        { acab: 'ELO BRANCO',   preco: 224.56, protect: 277.82 },
         { acab: 'ELO CURUPIXÁ', preco: 231.30, protect: 284.55 },
       ]},
-      { label: '18 cm',    itens: [
-        { acab: 'ELO BRANCO',    preco: 251.51, protect: 317.44 },
+      { label: '18 cm', itens: [
+        { acab: 'ELO BRANCO',   preco: 251.51, protect: 317.44 },
         { acab: 'ELO CURUPIXÁ', preco: 259.05, protect: 324.98 },
       ]},
-      { label: '21 cm',    itens: [
-        { acab: 'ELO BRANCO',    preco: 281.69, protect: 347.62 },
+      { label: '21 cm', itens: [
+        { acab: 'ELO BRANCO',   preco: 281.69, protect: 347.62 },
         { acab: 'ELO CURUPIXÁ', preco: 290.14, protect: 356.07 },
       ]},
     ]
-  }
+  },
+  alizar9: {
+    title: 'Alizar ELO — 9mm', subtitle: 'Lamela 3mm MDF Superflora',
+    grupos: [
+      { label: '5×5',  itens: [
+        { acab: 'ELO BRANCO',   preco:  97.19, protect: 120.00 },
+        { acab: 'ELO CURUPIXÁ', preco: 100.10, protect: 122.92 },
+      ]},
+      { label: '5×7',  itens: [
+        { acab: 'ELO BRANCO',   preco: 103.02, protect: 125.83 },
+        { acab: 'ELO CURUPIXÁ', preco: 106.11, protect: 128.92 },
+      ]},
+      { label: '5×10', itens: [
+        { acab: 'ELO BRANCO',   preco: 114.66, protect: 137.48 },
+        { acab: 'ELO CURUPIXÁ', preco: 118.10, protect: 140.92 },
+      ]},
+      { label: '7×5',  itens: [
+        { acab: 'ELO BRANCO',   preco: 115.75, protect: 138.57 },
+        { acab: 'ELO CURUPIXÁ', preco: 119.22, protect: 142.04 },
+      ]},
+      { label: '7×10', itens: [
+        { acab: 'ELO BRANCO',   preco: 128.82, protect: 151.64 },
+        { acab: 'ELO CURUPIXÁ', preco: 132.69, protect: 155.51 },
+      ]},
+      { label: '10×5', itens: [
+        { acab: 'ELO BRANCO',   preco: 130.05, protect: 152.87 },
+        { acab: 'ELO CURUPIXÁ', preco: 133.95, protect: 156.77 },
+      ]},
+    ]
+  },
+  alizar15: {
+    title: 'Alizar ELO — 15mm', subtitle: 'Lamela 3mm MDF Superflora',
+    grupos: [
+      { label: '5,5 cm', itens: [
+        { acab: 'ELO BRANCO',   preco: 129.26, protect: 152.07 },
+        { acab: 'ELO CURUPIXÁ', preco: 133.13, protect: 155.95 },
+      ]},
+      { label: '5×10', itens: [
+        { acab: 'ELO BRANCO',   preco: 145.23, protect: 168.04 },
+        { acab: 'ELO CURUPIXÁ', preco: 149.58, protect: 172.40 },
+      ]},
+      { label: '7×5',  itens: [
+        { acab: 'ELO BRANCO',   preco: 147.99, protect: 170.80 },
+        { acab: 'ELO CURUPIXÁ', preco: 152.43, protect: 175.24 },
+      ]},
+      { label: '7×10', itens: [
+        { acab: 'ELO BRANCO',   preco: 166.26, protect: 189.07 },
+        { acab: 'ELO CURUPIXÁ', preco: 171.24, protect: 194.06 },
+      ]},
+      { label: '10×5', itens: [
+        { acab: 'ELO BRANCO',   preco: 169.43, protect: 192.24 },
+        { acab: 'ELO CURUPIXÁ', preco: 174.51, protect: 197.33 },
+      ]},
+      { label: '10×10', itens: [
+        { acab: 'ELO BRANCO',   preco: 231.27, protect: 254.09 },
+        { acab: 'ELO CURUPIXÁ', preco: 238.21, protect: 261.03 },
+      ]},
+    ]
+  },
+  kitCorrer: {
+    title: 'Kit Porta de Correr ELO',
+    itens: [
+      { item: 'Suporte Correr + Vista — Todos os padrões', preco: 350.96 },
+      { item: 'Trilho, Roldana e Guia',                     preco: 162.19 },
+      { item: 'Usinagem',                                   preco:  68.42 },
+      { item: 'Caixa',                                      preco:  16.54 },
+    ]
+  },
 };
 
 // ── BAT. / ALIZAR / RODAPÉ LACCA DATA (base Fábrica — mult aplicado no render) ──
@@ -258,40 +321,40 @@ const laccaAcabBase = {
     title: 'Batente LACCA', subtitle: '30mm MDF Superflora',
     grupos: [
       { label: '5,5 cm', itens: [
-        { acab: 'FENDI / GRAFITE / NERO / BLUE E GREEN', preco:  98.94, protect: 115.94 },
-        { acab: 'LACCA PET BLANCO',                      preco: 103.38, protect: 120.38 },
+        { acab: 'FENDI / GRAFITE / NERO / BLUE E GREEN', preco:  109.08, protect: 127.82 },
+        { acab: 'LACCA PET BLANCO',                      preco: 113.98, protect: 132.72 },
       ]},
       { label: '6,5 cm', itens: [
-        { acab: 'FENDI / GRAFITE / NERO / BLUE E GREEN', preco: 109.70, protect: 126.70 },
-        { acab: 'LACCA PET BLANCO',                      preco: 114.63, protect: 131.63 },
+        { acab: 'FENDI / GRAFITE / NERO / BLUE E GREEN', preco: 120.94, protect: 139.69 },
+        { acab: 'LACCA PET BLANCO',                      preco: 126.38, protect: 145.12 },
       ]},
       { label: '7,5 cm', itens: [
-        { acab: 'FENDI / GRAFITE / NERO / BLUE E GREEN', preco: 120.39, protect: 137.39 },
-        { acab: 'LACCA PET BLANCO',                      preco: 125.80, protect: 142.80 },
+        { acab: 'FENDI / GRAFITE / NERO / BLUE E GREEN', preco: 132.73, protect: 151.47 },
+        { acab: 'LACCA PET BLANCO',                      preco: 138.69, protect: 157.44 },
       ]},
       { label: '8,5 cm', itens: [
-        { acab: 'FENDI / GRAFITE / NERO / BLUE E GREEN', preco: 135.11, protect: 167.11 },
-        { acab: 'LACCA PET BLANCO',                      preco: 141.18, protect: 173.18 },
+        { acab: 'FENDI / GRAFITE / NERO / BLUE E GREEN', preco: 148.96, protect: 184.24 },
+        { acab: 'LACCA PET BLANCO',                      preco: 155.65, protect: 190.93 },
       ]},
       { label: '10 cm', itens: [
-        { acab: 'FENDI / GRAFITE / NERO / BLUE E GREEN', preco: 149.84, protect: 181.84 },
-        { acab: 'LACCA PET BLANCO',                      preco: 156.57, protect: 188.57 },
+        { acab: 'FENDI / GRAFITE / NERO / BLUE E GREEN', preco: 165.2, protect: 200.48 },
+        { acab: 'LACCA PET BLANCO',                      preco: 172.62, protect: 207.9 },
       ]},
       { label: '12 cm', itens: [
-        { acab: 'FENDI / GRAFITE / NERO / BLUE E GREEN', preco: 178.00, protect: 220.00 },
-        { acab: 'LACCA PET BLANCO',                      preco: 186.01, protect: 228.01 },
+        { acab: 'FENDI / GRAFITE / NERO / BLUE E GREEN', preco: 196.25, protect: 242.55 },
+        { acab: 'LACCA PET BLANCO',                      preco: 205.08, protect: 251.38 },
       ]},
       { label: '14 cm', itens: [
-        { acab: 'FENDI / GRAFITE / NERO / BLUE E GREEN', preco: 224.05, protect: 266.05 },
-        { acab: 'LACCA PET BLANCO',                      preco: 234.13, protect: 276.13 },
+        { acab: 'FENDI / GRAFITE / NERO / BLUE E GREEN', preco: 247.02, protect: 293.32 },
+        { acab: 'LACCA PET BLANCO',                      preco: 258.13, protect: 304.43 },
       ]},
       { label: '18 cm', itens: [
-        { acab: 'FENDI / GRAFITE / NERO / BLUE E GREEN', preco: 273.15, protect: 325.15 },
-        { acab: 'LACCA PET BLANCO',                      preco: 285.44, protect: 337.44 },
+        { acab: 'FENDI / GRAFITE / NERO / BLUE E GREEN', preco: 301.15, protect: 358.48 },
+        { acab: 'LACCA PET BLANCO',                      preco: 314.7, protect: 372.03 },
       ]},
       { label: '21 cm', itens: [
-        { acab: 'FENDI / GRAFITE / NERO / BLUE E GREEN', preco: 345.90, protect: 397.90 },
-        { acab: 'LACCA PET BLANCO',                      preco: 361.46, protect: 413.46 },
+        { acab: 'FENDI / GRAFITE / NERO / BLUE E GREEN', preco: 381.35, protect: 438.68 },
+        { acab: 'LACCA PET BLANCO',                      preco: 398.51, protect: 455.84 },
       ]},
     ]
   },
@@ -299,28 +362,28 @@ const laccaAcabBase = {
     title: 'Alizar LACCA — 9mm', subtitle: 'Lamela 3mm MDF Superflora',
     grupos: [
       { label: '5×5',          itens: [
-        { acab: 'FENDI / GRAFITE / NERO / BLUE E GREEN', preco: 113.24, protect: 131.24 },
-        { acab: 'LACCA PET BLANCO',                      preco: 118.32, protect: 136.32 },
+        { acab: 'FENDI / GRAFITE / NERO / BLUE E GREEN', preco: 124.85, protect: 144.69 },
+        { acab: 'LACCA PET BLANCO',                      preco: 130.45, protect: 150.29 },
       ]},
       { label: '5×7',          itens: [
-        { acab: 'FENDI / GRAFITE / NERO / BLUE E GREEN', preco: 120.85, protect: 138.85 },
-        { acab: 'LACCA PET BLANCO',                      preco: 126.29, protect: 144.29 },
+        { acab: 'FENDI / GRAFITE / NERO / BLUE E GREEN', preco: 133.24, protect: 153.08 },
+        { acab: 'LACCA PET BLANCO',                      preco: 139.23, protect: 159.08 },
       ]},
       { label: '5×10',         itens: [
-        { acab: 'FENDI / GRAFITE / NERO / BLUE E GREEN', preco: 134.88, protect: 152.88 },
-        { acab: 'LACCA PET BLANCO',                      preco: 140.95, protect: 158.95 },
+        { acab: 'FENDI / GRAFITE / NERO / BLUE E GREEN', preco: 148.71, protect: 168.55 },
+        { acab: 'LACCA PET BLANCO',                      preco: 155.4, protect: 175.24 },
       ]},
       { label: '7×5',          itens: [
-        { acab: 'FENDI / GRAFITE / NERO / BLUE E GREEN', preco: 136.88, protect: 154.88 },
-        { acab: 'LACCA PET BLANCO',                      preco: 143.04, protect: 161.04 },
+        { acab: 'FENDI / GRAFITE / NERO / BLUE E GREEN', preco: 150.91, protect: 170.76 },
+        { acab: 'LACCA PET BLANCO',                      preco: 157.7, protect: 177.55 },
       ]},
       { label: '7×7',          itens: [
-        { acab: 'FENDI / GRAFITE / NERO / BLUE E GREEN', preco: 143.41, protect: 161.41 },
-        { acab: 'LACCA PET BLANCO',                      preco: 149.86, protect: 167.86 },
+        { acab: 'FENDI / GRAFITE / NERO / BLUE E GREEN', preco: 158.11, protect: 177.95 },
+        { acab: 'LACCA PET BLANCO',                      preco: 165.22, protect: 185.07 },
       ]},
       { label: '7×10',         itens: [
-        { acab: 'FENDI / GRAFITE / NERO / BLUE E GREEN', preco: 157.75, protect: 175.75 },
-        { acab: 'LACCA PET BLANCO',                      preco: 164.85, protect: 182.85 },
+        { acab: 'FENDI / GRAFITE / NERO / BLUE E GREEN', preco: 173.92, protect: 193.77 },
+        { acab: 'LACCA PET BLANCO',                      preco: 181.74, protect: 201.59 },
       ]},
       { label: '10×5',         itens: [
         { acab: 'FENDI / GRAFITE / NERO / BLUE E GREEN', preco: 173.32, protect: 191.32 },
@@ -344,39 +407,39 @@ const laccaAcabBase = {
     title: 'Alizar LACCA — 15mm', subtitle: 'Lamela 3mm MDF Superflora',
     grupos: [
       { label: '5×5',        itens: [
-        { acab: 'FENDI / GRAFITE / NERO / BLUE E GREEN', preco: 151.46, protect: 169.46 },
-        { acab: 'LACCA PET BLANCO',                      preco: 158.27, protect: 176.27 },
+        { acab: 'FENDI / GRAFITE / NERO / BLUE E GREEN', preco: 166.98, protect: 186.83 },
+        { acab: 'LACCA PET BLANCO',                      preco: 174.49, protect: 194.34 },
       ]},
       { label: '5×7',        itens: [
-        { acab: 'FENDI / GRAFITE / NERO / BLUE E GREEN', preco: 157.57, protect: 175.57 },
-        { acab: 'LACCA PET BLANCO',                      preco: 164.66, protect: 182.66 },
+        { acab: 'FENDI / GRAFITE / NERO / BLUE E GREEN', preco: 173.72, protect: 193.57 },
+        { acab: 'LACCA PET BLANCO',                      preco: 181.54, protect: 201.38 },
       ]},
       { label: '5×10',       itens: [
-        { acab: 'FENDI / GRAFITE / NERO / BLUE E GREEN', preco: 171.86, protect: 189.86 },
-        { acab: 'LACCA PET BLANCO',                      preco: 179.59, protect: 197.59 },
+        { acab: 'FENDI / GRAFITE / NERO / BLUE E GREEN', preco: 189.48, protect: 209.33 },
+        { acab: 'LACCA PET BLANCO',                      preco: 198, protect: 217.85 },
       ]},
       { label: '7×5',        itens: [
-        { acab: 'FENDI / GRAFITE / NERO / BLUE E GREEN', preco: 167.17, protect: 185.17 },
-        { acab: 'LACCA PET BLANCO',                      preco: 174.69, protect: 192.69 },
+        { acab: 'FENDI / GRAFITE / NERO / BLUE E GREEN', preco: 184.3, protect: 204.15 },
+        { acab: 'LACCA PET BLANCO',                      preco: 192.6, protect: 212.44 },
       ]},
       { label: '7×10',       itens: [
-        { acab: 'FENDI / GRAFITE / NERO / BLUE E GREEN', preco: 189.82, protect: 207.82 },
-        { acab: 'LACCA PET BLANCO',                      preco: 198.36, protect: 216.36 },
+        { acab: 'FENDI / GRAFITE / NERO / BLUE E GREEN', preco: 209.28, protect: 229.12 },
+        { acab: 'LACCA PET BLANCO',                      preco: 218.69, protect: 238.53 },
       ]},
       { label: '10×5',       itens: [
-        { acab: 'FENDI / GRAFITE / NERO / BLUE E GREEN', preco: 210.22, protect: 228.22 },
-        { acab: 'LACCA PET BLANCO',                      preco: 219.67, protect: 237.67 },
+        { acab: 'FENDI / GRAFITE / NERO / BLUE E GREEN', preco: 231.77, protect: 251.61 },
+        { acab: 'LACCA PET BLANCO',                      preco: 242.19, protect: 262.03 },
       ]},
       { label: '10×10',      itens: [
-        { acab: 'FENDI / GRAFITE / NERO / BLUE E GREEN', preco: 286.95, protect: 304.95 },
-        { acab: 'LACCA PET BLANCO',                      preco: 299.85, protect: 317.85 },
+        { acab: 'FENDI / GRAFITE / NERO / BLUE E GREEN', preco: 316.36, protect: 336.21 },
+        { acab: 'LACCA PET BLANCO',                      preco: 330.58, protect: 350.43 },
       ]},
       { label: '3cm Pinado', itens: [
-        { acab: 'FENDI / GRAFITE / NERO / BLUE E GREEN', preco: 100.28, protect: 118.28 },
+        { acab: 'FENDI / GRAFITE / NERO / BLUE E GREEN', preco: 110.56, protect: 130.4 },
       ]},
       { label: '7 Plus',     itens: [
-        { acab: 'FENDI / GRAFITE / NERO / BLUE E GREEN', preco: 218.29, protect: 236.29 },
-        { acab: 'LACCA PET BLANCO',                      preco: 228.11, protect: 246.11 },
+        { acab: 'FENDI / GRAFITE / NERO / BLUE E GREEN', preco: 240.67, protect: 260.51 },
+        { acab: 'LACCA PET BLANCO',                      preco: 251.49, protect: 271.33 },
       ]},
     ]
   },
@@ -384,32 +447,32 @@ const laccaAcabBase = {
     title: 'Rodapé LACCA', subtitle: '15mm × 2,40m MDF Superflora',
     grupos: [
       { label: '5 cm',  itens: [
-        { acab: 'FENDI / GRAFITE / NERO / BLUE E GREEN', precoRegua: 26.89, precoMl: 11.20 },
-        { acab: 'LACCA PET BLANCO',                      precoRegua: 28.10, precoMl: 11.71 },
+        { acab: 'FENDI / GRAFITE / NERO / BLUE E GREEN', precoRegua: 29.65, precoMl: 12.35 },
+        { acab: 'LACCA PET BLANCO',                      precoRegua: 30.98, precoMl: 12.91 },
       ]},
       { label: '7 cm',  itens: [
-        { acab: 'FENDI / GRAFITE / NERO / BLUE E GREEN', precoRegua: 33.34, precoMl: 13.89 },
-        { acab: 'LACCA PET BLANCO',                      precoRegua: 34.83, precoMl: 14.51 },
+        { acab: 'FENDI / GRAFITE / NERO / BLUE E GREEN', precoRegua: 36.76, precoMl: 15.32 },
+        { acab: 'LACCA PET BLANCO',                      precoRegua: 38.4, precoMl: 16 },
       ]},
       { label: '10 cm', itens: [
-        { acab: 'FENDI / GRAFITE / NERO / BLUE E GREEN', precoRegua: 47.23, precoMl: 19.68 },
-        { acab: 'LACCA PET BLANCO',                      precoRegua: 49.35, precoMl: 20.56 },
+        { acab: 'FENDI / GRAFITE / NERO / BLUE E GREEN', precoRegua: 52.07, precoMl: 21.7 },
+        { acab: 'LACCA PET BLANCO',                      precoRegua: 54.41, precoMl: 22.67 },
       ]},
       { label: '15 cm', itens: [
-        { acab: 'FENDI / GRAFITE / NERO / BLUE E GREEN', precoRegua: 56.13, precoMl: 23.39 },
-        { acab: 'LACCA PET BLANCO',                      precoRegua: 58.65, precoMl: 24.44 },
+        { acab: 'FENDI / GRAFITE / NERO / BLUE E GREEN', precoRegua: 61.88, precoMl: 25.78 },
+        { acab: 'LACCA PET BLANCO',                      precoRegua: 64.66, precoMl: 26.94 },
       ]},
       { label: '20 cm', itens: [
-        { acab: 'FENDI / GRAFITE / NERO / BLUE E GREEN', precoRegua: 85.99, precoMl: 35.83 },
-        { acab: 'LACCA PET BLANCO',                      precoRegua: 89.86, precoMl: 37.44 },
+        { acab: 'FENDI / GRAFITE / NERO / BLUE E GREEN', precoRegua: 94.8, precoMl: 39.5 },
+        { acab: 'LACCA PET BLANCO',                      precoRegua: 99.07, precoMl: 41.28 },
       ]},
     ]
   },
   kitCorrer: {
     title: 'Kit Porta de Correr LACCA',
     itens: [
-      { item: 'Suporte Correr + Vista (5×3 — 2,40m) Semi Montado — Melamínico todos padrões', preco: 334.16 },
-      { item: 'Trilho, Roldana e Guia',                                                         preco: 127.92 },
+      { item: 'Suporte Correr + Vista (5×3 — 2,40m) Semi Montado — Melamínico todos padrões', preco: 368.41 },
+      { item: 'Trilho, Roldana e Guia',                                                         preco: 141.03 },
     ]
   },
 };
@@ -420,40 +483,40 @@ const melamAcabBase = {
     title: 'Batente Melamínico', subtitle: '30mm MDF Superflora',
     grupos: [
       { label: '5,5 cm', itens: [
-        { acab: 'MTX / ML CURUPIXA / LACCA BIANCO',                              preco:  88.22, protect: 105.22 },
-        { acab: 'ITALY / MOCACCINO / MARFIM / CARVALHO / ML IMBUIA / FREIJÓ',   preco:  94.64, protect: 111.64 },
+        { acab: 'MTX / ML CURUPIXA / LACCA BIANCO',                              preco:  97.26, protect: 116.01 },
+        { acab: 'ITALY / MOCACCINO / MARFIM / CARVALHO / ML IMBUIA / FREIJÓ',   preco:  104.34, protect: 123.08 },
       ]},
       { label: '6,5 cm', itens: [
-        { acab: 'MTX / ML CURUPIXA / LACCA BIANCO',                              preco:  97.82, protect: 114.82 },
-        { acab: 'ITALY / MOCACCINO / MARFIM / CARVALHO / ML IMBUIA / FREIJÓ',   preco: 104.86, protect: 121.86 },
+        { acab: 'MTX / ML CURUPIXA / LACCA BIANCO',                              preco:  107.85, protect: 126.59 },
+        { acab: 'ITALY / MOCACCINO / MARFIM / CARVALHO / ML IMBUIA / FREIJÓ',   preco: 115.61, protect: 134.35 },
       ]},
       { label: '7,5 cm', itens: [
-        { acab: 'MTX / ML CURUPIXA / LACCA BIANCO',                              preco: 107.34, protect: 124.34 },
-        { acab: 'ITALY / MOCACCINO / MARFIM / CARVALHO / ML IMBUIA / FREIJÓ',   preco: 115.06, protect: 132.06 },
+        { acab: 'MTX / ML CURUPIXA / LACCA BIANCO',                              preco: 118.34, protect: 137.08 },
+        { acab: 'ITALY / MOCACCINO / MARFIM / CARVALHO / ML IMBUIA / FREIJÓ',   preco: 126.85, protect: 145.6 },
       ]},
       { label: '8,5 cm', itens: [
-        { acab: 'MTX / ML CURUPIXA / LACCA BIANCO',                              preco: 120.48, protect: 152.48 },
-        { acab: 'ITALY / MOCACCINO / MARFIM / CARVALHO / ML IMBUIA / FREIJÓ',   preco: 130.45, protect: 162.45 },
+        { acab: 'MTX / ML CURUPIXA / LACCA BIANCO',                              preco: 132.83, protect: 168.11 },
+        { acab: 'ITALY / MOCACCINO / MARFIM / CARVALHO / ML IMBUIA / FREIJÓ',   preco: 143.82, protect: 179.1 },
       ]},
       { label: '10 cm', itens: [
-        { acab: 'MTX / ML CURUPIXA / LACCA BIANCO',                              preco: 133.61, protect: 165.61 },
-        { acab: 'ITALY / MOCACCINO / MARFIM / CARVALHO / ML IMBUIA / FREIJÓ',   preco: 145.84, protect: 177.84 },
+        { acab: 'MTX / ML CURUPIXA / LACCA BIANCO',                              preco: 147.31, protect: 182.59 },
+        { acab: 'ITALY / MOCACCINO / MARFIM / CARVALHO / ML IMBUIA / FREIJÓ',   preco: 160.79, protect: 196.07 },
       ]},
       { label: '12 cm', itens: [
-        { acab: 'MTX / ML CURUPIXA / LACCA BIANCO',                              preco: 158.72, protect: 200.72 },
-        { acab: 'ITALY / MOCACCINO / MARFIM / CARVALHO / ML IMBUIA / FREIJÓ',   preco: 169.74, protect: 211.74 },
+        { acab: 'MTX / ML CURUPIXA / LACCA BIANCO',                              preco: 174.99, protect: 221.29 },
+        { acab: 'ITALY / MOCACCINO / MARFIM / CARVALHO / ML IMBUIA / FREIJÓ',   preco: 187.14, protect: 233.44 },
       ]},
       { label: '14 cm', itens: [
-        { acab: 'MTX / ML CURUPIXA / LACCA BIANCO',                              preco: 199.78, protect: 241.78 },
-        { acab: 'ITALY / MOCACCINO / MARFIM / CARVALHO / ML IMBUIA / FREIJÓ',   preco: 213.53, protect: 255.53 },
+        { acab: 'MTX / ML CURUPIXA / LACCA BIANCO',                              preco: 220.26, protect: 266.56 },
+        { acab: 'ITALY / MOCACCINO / MARFIM / CARVALHO / ML IMBUIA / FREIJÓ',   preco: 235.42, protect: 281.72 },
       ]},
       { label: '18 cm', itens: [
-        { acab: 'MTX / ML CURUPIXA / LACCA BIANCO',                              preco: 243.56, protect: 295.56 },
-        { acab: 'ITALY / MOCACCINO / MARFIM / CARVALHO / ML IMBUIA / FREIJÓ',   preco: 259.82, protect: 311.82 },
+        { acab: 'MTX / ML CURUPIXA / LACCA BIANCO',                              preco: 268.52, protect: 325.85 },
+        { acab: 'ITALY / MOCACCINO / MARFIM / CARVALHO / ML IMBUIA / FREIJÓ',   preco: 286.45, protect: 343.78 },
       ]},
       { label: '21 cm', itens: [
-        { acab: 'MTX / ML CURUPIXA / LACCA BIANCO',                              preco: 308.44, protect: 360.44 },
-        { acab: 'ITALY / MOCACCINO / MARFIM / CARVALHO / ML IMBUIA / FREIJÓ',   preco: 329.34, protect: 381.34 },
+        { acab: 'MTX / ML CURUPIXA / LACCA BIANCO',                              preco: 340.06, protect: 397.39 },
+        { acab: 'ITALY / MOCACCINO / MARFIM / CARVALHO / ML IMBUIA / FREIJÓ',   preco: 363.1, protect: 420.43 },
       ]},
     ]
   },
@@ -461,42 +524,42 @@ const melamAcabBase = {
     title: 'Alizar Melamínico — 9mm', subtitle: 'MDF Superflora',
     grupos: [
       { label: '5×5', itens: [
-        { acab: 'MTX / ML CURUPIXA / LACCA BIANCO',                              preco: 100.98, protect: 118.98 },
-        { acab: 'ITALY / MOCACCINO / MARFIM / CARVALHO / ML IMBUIA / FREIJÓ',   preco: 107.74, protect: 125.74 },
+        { acab: 'MTX / ML CURUPIXA / LACCA BIANCO',                              preco: 111.33, protect: 131.18 },
+        { acab: 'ITALY / MOCACCINO / MARFIM / CARVALHO / ML IMBUIA / FREIJÓ',   preco: 118.78, protect: 138.63 },
       ]},
       { label: '5×7', itens: [
-        { acab: 'MTX / ML CURUPIXA / LACCA BIANCO',                              preco: 107.76, protect: 125.76 },
-        { acab: 'ITALY / MOCACCINO / MARFIM / CARVALHO / ML IMBUIA / FREIJÓ',   preco: 116.38, protect: 134.38 },
+        { acab: 'MTX / ML CURUPIXA / LACCA BIANCO',                              preco: 118.81, protect: 138.65 },
+        { acab: 'ITALY / MOCACCINO / MARFIM / CARVALHO / ML IMBUIA / FREIJÓ',   preco: 128.31, protect: 148.15 },
       ]},
       { label: '5×10', itens: [
-        { acab: 'MTX / ML CURUPIXA / LACCA BIANCO',                              preco: 120.28, protect: 138.28 },
-        { acab: 'ITALY / MOCACCINO / MARFIM / CARVALHO / ML IMBUIA / FREIJÓ',   preco: 131.26, protect: 149.26 },
+        { acab: 'MTX / ML CURUPIXA / LACCA BIANCO',                              preco: 132.61, protect: 152.45 },
+        { acab: 'ITALY / MOCACCINO / MARFIM / CARVALHO / ML IMBUIA / FREIJÓ',   preco: 144.71, protect: 164.56 },
       ]},
       { label: '7×5', itens: [
-        { acab: 'MTX / ML CURUPIXA / LACCA BIANCO',                              preco: 122.05, protect: 140.05 },
-        { acab: 'ITALY / MOCACCINO / MARFIM / CARVALHO / ML IMBUIA / FREIJÓ',   preco: 133.21, protect: 151.21 },
+        { acab: 'MTX / ML CURUPIXA / LACCA BIANCO',                              preco: 134.56, protect: 154.41 },
+        { acab: 'ITALY / MOCACCINO / MARFIM / CARVALHO / ML IMBUIA / FREIJÓ',   preco: 146.86, protect: 166.71 },
       ]},
       { label: '7×10', itens: [
-        { acab: 'MTX / ML CURUPIXA / LACCA BIANCO',                              preco: 140.40, protect: 158.40 },
-        { acab: 'ITALY / MOCACCINO / MARFIM / CARVALHO / ML IMBUIA / FREIJÓ',   preco: 157.80, protect: 175.80 },
+        { acab: 'MTX / ML CURUPIXA / LACCA BIANCO',                              preco: 154.79, protect: 174.64 },
+        { acab: 'ITALY / MOCACCINO / MARFIM / CARVALHO / ML IMBUIA / FREIJÓ',   preco: 173.97, protect: 193.82 },
       ]},
       { label: '10×5', itens: [
-        { acab: 'MTX / ML CURUPIXA / LACCA BIANCO',                              preco: 154.54, protect: 172.54 },
-        { acab: 'ITALY / MOCACCINO / MARFIM / CARVALHO / ML IMBUIA / FREIJÓ',   preco: 169.37, protect: 187.37 },
+        { acab: 'MTX / ML CURUPIXA / LACCA BIANCO',                              preco: 170.38, protect: 190.23 },
+        { acab: 'ITALY / MOCACCINO / MARFIM / CARVALHO / ML IMBUIA / FREIJÓ',   preco: 186.73, protect: 206.58 },
       ]},
       { label: '10×10', itens: [
-        { acab: 'MTX / ML CURUPIXA / LACCA BIANCO',                              preco: 210.94, protect: 228.94 },
-        { acab: 'ITALY / MOCACCINO / MARFIM / CARVALHO / ML IMBUIA / FREIJÓ',   preco: 231.19, protect: 249.19 },
+        { acab: 'MTX / ML CURUPIXA / LACCA BIANCO',                              preco: 232.57, protect: 252.42 },
+        { acab: 'ITALY / MOCACCINO / MARFIM / CARVALHO / ML IMBUIA / FREIJÓ',   preco: 242.75, protect: 262.6 },
       ]},
       { label: '3cm Pinado', itens: [
-        { acab: 'ML TODOS OS PADRÕES', preco: 62.42, protect: 80.42 },
+        { acab: 'ML TODOS OS PADRÕES', preco: 68.82, protect: 88.66 },
       ]},
       { label: '5×2 (Drywall)', itens: [
-        { acab: 'ML TODOS OS PADRÕES', preco: 88.84, protect: 106.84 },
+        { acab: 'ML TODOS OS PADRÕES', preco: 97.95, protect: 117.79 },
       ]},
       { label: '7 Plus', itens: [
-        { acab: 'MTX / ML CURUPIXA / LACCA BIANCO',                              preco: 161.46, protect: 179.46 },
-        { acab: 'ITALY / MOCACCINO / MARFIM / CARVALHO / ML IMBUIA / FREIJÓ',   preco: 181.47, protect: 199.47 },
+        { acab: 'MTX / ML CURUPIXA / LACCA BIANCO',                              preco: 178.01, protect: 197.85 },
+        { acab: 'ITALY / MOCACCINO / MARFIM / CARVALHO / ML IMBUIA / FREIJÓ',   preco: 200.07, protect: 219.92 },
       ]},
     ]
   },
@@ -504,26 +567,26 @@ const melamAcabBase = {
     title: 'Alizar Melamínico — 15mm', subtitle: 'MDF Superflora',
     grupos: [
       { label: '5×5', itens: [
-        { acab: 'MTX / ML CURUPIXA / LACCA BIANCO',                              preco: 135.06, protect: 153.06 },
-        { acab: 'ITALY / MOCACCINO / MARFIM / CARVALHO / ML IMBUIA / FREIJÓ',   preco: 148.16, protect: 166.16 },
+        { acab: 'MTX / ML CURUPIXA / LACCA BIANCO',                              preco: 148.9, protect: 168.75 },
+        { acab: 'ITALY / MOCACCINO / MARFIM / CARVALHO / ML IMBUIA / FREIJÓ',   preco: 163.35, protect: 183.19 },
       ]},
       { label: '5×10', itens: [
-        { acab: 'MTX / ML CURUPIXA / LACCA BIANCO',                              preco: 153.25, protect: 171.25 },
-        { acab: 'ITALY / MOCACCINO / MARFIM / CARVALHO / ML IMBUIA / FREIJÓ',   preco: 167.92, protect: 185.92 },
+        { acab: 'MTX / ML CURUPIXA / LACCA BIANCO',                              preco: 168.96, protect: 188.8 },
+        { acab: 'ITALY / MOCACCINO / MARFIM / CARVALHO / ML IMBUIA / FREIJÓ',   preco: 185.13, protect: 204.98 },
       ]},
       { label: '7×5', itens: [
-        { acab: 'MTX / ML CURUPIXA / LACCA BIANCO',                              preco: 149.06, protect: 167.06 },
-        { acab: 'ITALY / MOCACCINO / MARFIM / CARVALHO / ML IMBUIA / FREIJÓ',   preco: 161.57, protect: 179.57 },
+        { acab: 'MTX / ML CURUPIXA / LACCA BIANCO',                              preco: 164.34, protect: 184.18 },
+        { acab: 'ITALY / MOCACCINO / MARFIM / CARVALHO / ML IMBUIA / FREIJÓ',   preco: 178.13, protect: 197.98 },
       ]},
       { label: '7×10', itens: [
-        { acab: 'MTX / ML CURUPIXA / LACCA BIANCO',                              preco: 169.27, protect: 187.27 },
-        { acab: 'ITALY / MOCACCINO / MARFIM / CARVALHO / ML IMBUIA / FREIJÓ',   preco: 185.20, protect: 203.20 },
+        { acab: 'MTX / ML CURUPIXA / LACCA BIANCO',                              preco: 186.62, protect: 206.47 },
+        { acab: 'ITALY / MOCACCINO / MARFIM / CARVALHO / ML IMBUIA / FREIJÓ',   preco: 204.18, protect: 224.03 },
       ]},
       { label: '10×5', itens: [
         { acab: 'MTX / ML CURUPIXA / LACCA BIANCO', preco: 187.45, protect: 205.45 },
       ]},
       { label: '5×2 (Drywall)', itens: [
-        { acab: 'ML TODOS OS PADRÕES', preco: 104.83, protect: 122.83 },
+        { acab: 'ML TODOS OS PADRÕES', preco: 115.58, protect: 135.42 },
       ]},
       { label: '7 Plus', itens: [
         { acab: 'MTX / ML CURUPIXA / LACCA BIANCO',                              preco: 194.66, protect: 212.66 },
@@ -535,32 +598,32 @@ const melamAcabBase = {
     title: 'Rodapé Melamínico', subtitle: '15mm × 2,40m MDF Superflora',
     grupos: [
       { label: '5 cm',  itens: [
-        { acab: 'MTX / ML CURUPIXA / LACCA BIANCO',                              precoRegua: 23.98, precoMl:  9.99 },
-        { acab: 'ITALY / MOCACCINO / MARFIM / CARVALHO / ML IMBUIA / FREIJÓ',   precoRegua: 27.12, precoMl: 11.30 },
+        { acab: 'MTX / ML CURUPIXA / LACCA BIANCO',                              precoRegua: 26.44, precoMl:  11.02 },
+        { acab: 'ITALY / MOCACCINO / MARFIM / CARVALHO / ML IMBUIA / FREIJÓ',   precoRegua: 29.9, precoMl: 12.46 },
       ]},
       { label: '7 cm',  itens: [
-        { acab: 'MTX / ML CURUPIXA / LACCA BIANCO',                              precoRegua: 29.74, precoMl: 12.39 },
-        { acab: 'ITALY / MOCACCINO / MARFIM / CARVALHO / ML IMBUIA / FREIJÓ',   precoRegua: 32.04, precoMl: 13.35 },
+        { acab: 'MTX / ML CURUPIXA / LACCA BIANCO',                              precoRegua: 32.79, precoMl: 13.66 },
+        { acab: 'ITALY / MOCACCINO / MARFIM / CARVALHO / ML IMBUIA / FREIJÓ',   precoRegua: 35.32, precoMl: 14.72 },
       ]},
       { label: '10 cm', itens: [
-        { acab: 'MTX / ML CURUPIXA / LACCA BIANCO',                              precoRegua: 42.12, precoMl: 17.55 },
-        { acab: 'ITALY / MOCACCINO / MARFIM / CARVALHO / ML IMBUIA / FREIJÓ',   precoRegua: 45.63, precoMl: 19.01 },
+        { acab: 'MTX / ML CURUPIXA / LACCA BIANCO',                              precoRegua: 46.44, precoMl: 19.35 },
+        { acab: 'ITALY / MOCACCINO / MARFIM / CARVALHO / ML IMBUIA / FREIJÓ',   precoRegua: 50.31, precoMl: 20.96 },
       ]},
       { label: '15 cm', itens: [
-        { acab: 'MTX / ML CURUPIXA / LACCA BIANCO',                              precoRegua: 50.04, precoMl: 20.85 },
-        { acab: 'ITALY / MOCACCINO / MARFIM / CARVALHO / ML IMBUIA / FREIJÓ',   precoRegua: 54.15, precoMl: 22.56 },
+        { acab: 'MTX / ML CURUPIXA / LACCA BIANCO',                              precoRegua: 55.17, precoMl: 22.99 },
+        { acab: 'ITALY / MOCACCINO / MARFIM / CARVALHO / ML IMBUIA / FREIJÓ',   precoRegua: 59.7, precoMl: 24.88 },
       ]},
       { label: '20 cm', itens: [
-        { acab: 'MTX / ML CURUPIXA / LACCA BIANCO',                              precoRegua: 76.68, precoMl: 31.95 },
-        { acab: 'ITALY / MOCACCINO / MARFIM / CARVALHO / ML IMBUIA / FREIJÓ',   precoRegua: 83.43, precoMl: 34.76 },
+        { acab: 'MTX / ML CURUPIXA / LACCA BIANCO',                              precoRegua: 84.54, precoMl: 35.22 },
+        { acab: 'ITALY / MOCACCINO / MARFIM / CARVALHO / ML IMBUIA / FREIJÓ',   precoRegua: 91.98, precoMl: 38.33 },
       ]},
     ]
   },
   kitCorrer: {
     title: 'Kit Porta de Correr Melamínico',
     itens: [
-      { item: 'Melamínico — todos os padrões', preco: 276.81 },
-      { item: 'Trilho, Roldana e Guia',        preco: 127.92 },
+      { item: 'Melamínico — todos os padrões', preco: 305.18 },
+      { item: 'Trilho, Roldana e Guia',        preco: 141.03 },
     ]
   },
 };
@@ -573,19 +636,19 @@ const portasUVData = {
         nome: 'ESSENZIALE', sub: 'HDF 3mm · 35mm espessura',
         grupos: [
           { nome: 'PINTURA UV (BRA / CUR / IMB / FRE)', tipo: 'uv', itens: [
-            { linha: 'COLMEIA — SARRAFO 3mm', p: [166.18, 189.86, 213.53, 264.62, 334.73] },
-            { linha: 'SARRAFO 6mm',           p: [176.85, 202.29, 227.77, 283.46, 358.65] },
-            { linha: 'SÓLIDA',                p: [257.13, 280.81, 304.48, 355.57, 425.68] },
+            { linha: 'COLMEIA — SARRAFO 3mm', p: [183.21, 209.32, 235.42, 291.74, 369.04] },
+            { linha: 'SARRAFO 6mm',           p: [194.98, 223.02, 251.12, 312.51, 395.41] },
+            { linha: 'SÓLIDA',                p: [283.49, 309.59, 335.69, 392.02, 469.31] },
           ]},
           { nome: 'MELAMÍNICO CURUPIXA', tipo: 'curupixa', itens: [
-            { linha: 'COLMEIA — SARRAFO 3mm', p: [180.71, 207.14, 233.58, 290.83, 368.12] },
-            { linha: 'SARRAFO 6mm',           p: [190.52, 218.61, 246.69, 307.23, 388.93] },
-            { linha: 'SÓLIDA',                p: [271.66, 298.09, 324.53, 381.78, 459.07] },
+            { linha: 'COLMEIA — SARRAFO 3mm', p: [199.23, 228.37, 257.52, 320.64, 405.85] },
+            { linha: 'SARRAFO 6mm',           p: [210.05, 241.02, 271.98, 338.72, 428.8] },
+            { linha: 'SÓLIDA',                p: [299.51, 328.64, 357.79, 420.91, 506.12] },
           ]},
           { nome: 'MELAMÍNICO ITALY / MOCACCINO / MARFIM / CARVALHO / IMBUIA / FREIJO', tipo: 'italy', itens: [
-            { linha: 'COLMEIA — SARRAFO 3mm', p: [199.81, 229.26, 258.69, 322.16, 407.84] },
-            { linha: 'SARRAFO 6mm',           p: [210.12, 241.29, 272.46, 339.36, 429.69] },
-            { linha: 'SÓLIDA',                p: [290.76, 320.21, 349.64, 413.11, 498.79] },
+            { linha: 'COLMEIA — SARRAFO 3mm', p: [220.29, 252.76, 285.21, 355.18, 449.64] },
+            { linha: 'SARRAFO 6mm',           p: [231.66, 266.02, 300.39, 374.14, 473.73] },
+            { linha: 'SÓLIDA',                p: [320.56, 353.03, 385.48, 455.45, 549.92] },
           ]},
         ]
       },
@@ -593,19 +656,19 @@ const portasUVData = {
         nome: 'INNOVAZIONE', sub: 'HDF Superflora 3mm · 35mm',
         grupos: [
           { nome: 'PINTURA UV (BRA / CUR / IMB / FRE)', tipo: 'uv', itens: [
-            { linha: 'COLMEIA — SARRAFO 3mm', p: [187.08, 214.25, 241.42, 300.53, 380.35] },
-            { linha: 'SARRAFO 6mm',           p: [197.74, 226.70, 255.64, 318.33, 402.93] },
-            { linha: 'SÓLIDA',                p: [278.03, 305.20, 332.37, 391.48, 471.30] },
+            { linha: 'COLMEIA — SARRAFO 3mm', p: [206.26, 236.21, 266.17, 331.33, 419.34] },
+            { linha: 'SARRAFO 6mm',           p: [218.01, 249.94, 281.84, 350.96, 444.23] },
+            { linha: 'SÓLIDA',                p: [306.53, 336.48, 366.44, 431.61, 519.61] },
           ]},
           { nome: 'MELAMÍNICO CURUPIXA', tipo: 'curupixa', itens: [
-            { linha: 'COLMEIA — SARRAFO 3mm', p: [199.96, 229.62, 259.28, 322.95, 408.91] },
-            { linha: 'SARRAFO 6mm',           p: [209.77, 241.08, 272.39, 339.33, 429.72] },
-            { linha: 'SÓLIDA',                p: [290.91, 320.57, 350.23, 413.90, 499.86] },
+            { linha: 'COLMEIA — SARRAFO 3mm', p: [220.46, 253.16, 285.86, 356.05, 450.82] },
+            { linha: 'SARRAFO 6mm',           p: [231.27, 265.79, 300.31, 374.11, 473.77] },
+            { linha: 'SÓLIDA',                p: [320.73, 353.43, 386.13, 456.32, 551.1] },
           ]},
           { nome: 'MELAMÍNICO ITALY / MOCACCINO / MARFIM / CARVALHO / IMBUIA / FREIJO', tipo: 'italy', itens: [
-            { linha: 'COLMEIA — SARRAFO 3mm', p: [220.03, 252.85, 285.67, 355.89, 450.68] },
-            { linha: 'SARRAFO 6mm',           p: [230.33, 264.88, 299.45, 373.09, 472.54] },
-            { linha: 'SÓLIDA',                p: [310.98, 343.80, 376.62, 446.84, 541.63] },
+            { linha: 'COLMEIA — SARRAFO 3mm', p: [242.58, 278.77, 314.95, 392.37, 496.87] },
+            { linha: 'SARRAFO 6mm',           p: [253.94, 292.03, 330.14, 411.33, 520.98] },
+            { linha: 'SÓLIDA',                p: [342.86, 379.04, 415.22, 492.64, 597.15] },
           ]},
         ]
       },
@@ -613,12 +676,12 @@ const portasUVData = {
         nome: 'SOFISTICATO', sub: 'HDF Superflora 3mm · 40mm',
         grupos: [
           { nome: 'MELAMÍNICO CURUPIXA', tipo: 'curupixa', itens: [
-            { linha: 'SARRAFO 6mm', p: [280.63, 323.81, 366.99, 457.60, 579.92] },
-            { linha: 'SÓLIDA',     p: [371.58, 414.76, 457.94, 548.55, 670.87] },
+            { linha: 'SARRAFO 6mm', p: [309.39, 357, 404.61, 504.5, 639.36] },
+            { linha: 'SÓLIDA',     p: [409.67, 457.27, 504.88, 604.78, 739.63] },
           ]},
           { nome: 'MELAMÍNICO ITALY / MOCACCINO / MARFIM / CARVALHO / IMBUIA / FREIJO', tipo: 'italy', itens: [
-            { linha: 'SARRAFO 6mm', p: [294.66, 340.00, 385.34, 480.48, 608.91] },
-            { linha: 'SÓLIDA',     p: [390.16, 435.50, 480.84, 575.98, 704.41] },
+            { linha: 'SARRAFO 6mm', p: [324.86, 374.85, 424.84, 529.73, 671.32] },
+            { linha: 'SÓLIDA',     p: [430.15, 480.14, 530.12, 635.02, 776.62] },
           ]},
         ]
       },
@@ -644,19 +707,19 @@ const portasUVData = {
         nome: 'ESSENZIALE', sub: 'HDF 3mm · 35mm espessura',
         grupos: [
           { nome: 'PINTURA UV (BRA / CUR / IMB / FRE)', tipo: 'uv', itens: [
-            { linha: 'COLMEIA — SARRAFO 3mm', p: [226.84, 259.16, 291.47, 361.21, 456.91] },
-            { linha: 'SARRAFO 6mm',           p: [241.40, 276.13, 310.91, 386.92, 489.56] },
-            { linha: 'SÓLIDA',                p: [350.98, 383.31, 415.62, 485.35, 581.05] },
+            { linha: 'COLMEIA — SARRAFO 3mm', p: [210.69, 240.72, 270.73, 335.5, 424.4] },
+            { linha: 'SARRAFO 6mm',           p: [224.23, 256.47, 288.79, 359.39, 454.72] },
+            { linha: 'SÓLIDA',                p: [326.01, 356.03, 386.04, 450.82, 539.71] },
           ]},
           { nome: 'MELAMÍNICO CURUPIXA', tipo: 'curupixa', itens: [
-            { linha: 'COLMEIA — SARRAFO 3mm', p: [246.67, 282.75, 318.84, 396.98, 502.48] },
-            { linha: 'SARRAFO 6mm',           p: [260.06, 298.40, 336.73, 419.37, 530.89] },
-            { linha: 'SÓLIDA',                p: [370.82, 406.89, 442.98, 521.13, 626.63] },
+            { linha: 'COLMEIA — SARRAFO 3mm', p: [229.11, 262.63, 296.15, 368.74, 466.73] },
+            { linha: 'SARRAFO 6mm',           p: [241.56, 277.17, 312.78, 389.53, 493.12] },
+            { linha: 'SÓLIDA',                p: [344.44, 377.94, 411.46, 484.05, 582.04] },
           ]},
           { nome: 'MELAMÍNICO ITALY / MOCACCINO / MARFIM / CARVALHO / IMBUIA / FREIJO', tipo: 'italy', itens: [
-            { linha: 'COLMEIA — SARRAFO 3mm', p: [272.74, 312.94, 353.11, 439.75, 556.70] },
-            { linha: 'SARRAFO 6mm',           p: [286.81, 329.36, 371.91, 463.23, 586.53] },
-            { linha: 'SÓLIDA',                p: [396.89, 437.09, 477.26, 563.90, 680.85] },
+            { linha: 'COLMEIA — SARRAFO 3mm', p: [253.33, 290.67, 327.99, 408.46, 517.09] },
+            { linha: 'SARRAFO 6mm',           p: [266.41, 305.92, 345.45, 430.26, 544.79] },
+            { linha: 'SÓLIDA',                p: [368.64, 405.98, 443.3, 523.77, 632.41] },
           ]},
         ]
       },
@@ -664,19 +727,19 @@ const portasUVData = {
         nome: 'INNOVAZIONE', sub: 'HDF Superflora 3mm · 35mm',
         grupos: [
           { nome: 'PINTURA UV (BRA / CUR / IMB / FRE)', tipo: 'uv', itens: [
-            { linha: 'COLMEIA — SARRAFO 3mm', p: [255.36, 292.45, 329.54, 410.22, 519.18] },
-            { linha: 'SARRAFO 6mm',           p: [269.92, 309.45, 348.95, 434.52, 550.00] },
-            { linha: 'SÓLIDA',                p: [379.51, 416.60, 453.69, 534.37, 643.32] },
+            { linha: 'COLMEIA — SARRAFO 3mm', p: [237.2, 271.64, 306.1, 381.03, 482.24] },
+            { linha: 'SARRAFO 6mm',           p: [250.71, 287.43, 324.12, 403.6, 510.86] },
+            { linha: 'SÓLIDA',                p: [352.51, 386.95, 421.41, 496.35, 597.55] },
           ]},
           { nome: 'MELAMÍNICO CURUPIXA', tipo: 'curupixa', itens: [
-            { linha: 'COLMEIA — SARRAFO 3mm', p: [272.95, 313.43, 353.92, 440.83, 558.16] },
-            { linha: 'SARRAFO 6mm',           p: [286.34, 329.07, 371.81, 463.19, 586.57] },
-            { linha: 'SÓLIDA',                p: [397.09, 437.58, 478.06, 564.97, 682.31] },
+            { linha: 'COLMEIA — SARRAFO 3mm', p: [253.53, 291.13, 328.74, 409.46, 518.44] },
+            { linha: 'SARRAFO 6mm',           p: [265.96, 305.66, 345.36, 430.23, 544.84] },
+            { linha: 'SÓLIDA',                p: [368.84, 406.44, 444.05, 524.77, 633.77] },
           ]},
           { nome: 'MELAMÍNICO ITALY / MOCACCINO / MARFIM / CARVALHO / IMBUIA / FREIJO', tipo: 'italy', itens: [
-            { linha: 'COLMEIA — SARRAFO 3mm', p: [300.34, 345.14, 389.94, 485.79, 615.18] },
-            { linha: 'SARRAFO 6mm',           p: [314.40, 361.56, 408.75, 509.27, 645.02] },
-            { linha: 'SÓLIDA',                p: [424.49, 469.29, 514.09, 609.94, 739.32] },
+            { linha: 'COLMEIA — SARRAFO 3mm', p: [278.97, 320.59, 362.19, 451.23, 571.4] },
+            { linha: 'SARRAFO 6mm',           p: [292.03, 335.83, 379.66, 473.03, 599.13] },
+            { linha: 'SÓLIDA',                p: [394.29, 435.9, 477.5, 566.54, 686.72] },
           ]},
         ]
       },
@@ -684,12 +747,12 @@ const portasUVData = {
         nome: 'SOFISTICATO', sub: 'HDF Superflora 3mm · 40mm',
         grupos: [
           { nome: 'MELAMÍNICO CURUPIXA', tipo: 'curupixa', itens: [
-            { linha: 'SARRAFO 6mm', p: [383.06, 442.00, 500.94, 624.62, 791.59] },
-            { linha: 'SÓLIDA',     p: [507.21, 566.15, 625.09, 748.77, 915.74] },
+            { linha: 'SARRAFO 6mm', p: [355.8, 410.55, 465.3, 580.17, 735.26] },
+            { linha: 'SÓLIDA',     p: [471.12, 525.86, 580.61, 695.5, 850.57] },
           ]},
           { nome: 'MELAMÍNICO ITALY / MOCACCINO / MARFIM / CARVALHO / IMBUIA / FREIJO', tipo: 'italy', itens: [
-            { linha: 'SARRAFO 6mm', p: [402.21, 464.10, 525.99, 655.86, 831.16] },
-            { linha: 'SÓLIDA',     p: [532.57, 594.45, 656.34, 786.21, 961.52] },
+            { linha: 'SARRAFO 6mm', p: [373.59, 431.08, 488.57, 609.19, 772.02] },
+            { linha: 'SÓLIDA',     p: [494.67, 552.16, 609.64, 730.27, 893.11] },
           ]},
         ]
       },
@@ -715,19 +778,19 @@ const portasUVData = {
         nome: 'ESSENZIALE', sub: 'HDF 3mm · 35mm espessura',
         grupos: [
           { nome: 'PINTURA UV (BRA / CUR / IMB / FRE)', tipo: 'uv', itens: [
-            { linha: 'COLMEIA — SARRAFO 3mm', p: [216.03, 246.82, 277.59, 344.01, 435.15] },
-            { linha: 'SARRAFO 6mm',           p: [229.91, 262.98, 296.10, 368.50, 466.25] },
-            { linha: 'SÓLIDA',                p: [334.27, 365.05, 395.82, 462.24, 553.38] },
+            { linha: 'COLMEIA — SARRAFO 3mm', p: [238.17, 272.12, 306.05, 379.26, 479.75] },
+            { linha: 'SARRAFO 6mm',           p: [253.47, 289.93, 326.46, 406.26, 514.03] },
+            { linha: 'SÓLIDA',                p: [368.54, 402.47, 436.4, 509.63, 610.1] },
           ]},
           { nome: 'MELAMÍNICO CURUPIXA', tipo: 'curupixa', itens: [
-            { linha: 'COLMEIA — SARRAFO 3mm', p: [234.92, 269.28, 303.65, 378.08, 478.56] },
-            { linha: 'SARRAFO 6mm',           p: [247.68, 284.19, 320.70, 399.40, 505.61] },
-            { linha: 'SÓLIDA',                p: [353.16, 387.52, 421.89, 496.31, 596.79] },
+            { linha: 'COLMEIA — SARRAFO 3mm', p: [259, 296.88, 334.78, 416.83, 527.61] },
+            { linha: 'SARRAFO 6mm',           p: [273.07, 313.33, 353.57, 440.34, 557.44] },
+            { linha: 'SÓLIDA',                p: [389.36, 427.23, 465.13, 547.18, 657.96] },
           ]},
           { nome: 'MELAMÍNICO ITALY / MOCACCINO / MARFIM / CARVALHO / IMBUIA / FREIJO', tipo: 'italy', itens: [
-            { linha: 'COLMEIA — SARRAFO 3mm', p: [259.75, 298.04, 336.30, 418.81, 530.19] },
-            { linha: 'SARRAFO 6mm',           p: [273.16, 313.68, 354.20, 441.17, 558.60] },
-            { linha: 'SÓLIDA',                p: [377.99, 416.27, 454.53, 537.04, 648.43] },
+            { linha: 'COLMEIA — SARRAFO 3mm', p: [286.38, 328.59, 370.77, 461.73, 584.53] },
+            { linha: 'SARRAFO 6mm',           p: [301.16, 345.83, 390.51, 486.38, 615.85] },
+            { linha: 'SÓLIDA',                p: [416.73, 458.94, 501.12, 592.09, 714.9] },
           ]},
         ]
       },
@@ -735,19 +798,19 @@ const portasUVData = {
         nome: 'INNOVAZIONE', sub: 'HDF Superflora 3mm · 35mm',
         grupos: [
           { nome: 'PINTURA UV (BRA / CUR / IMB / FRE)', tipo: 'uv', itens: [
-            { linha: 'COLMEIA — SARRAFO 3mm', p: [243.20, 278.53, 313.85, 390.69, 494.46] },
-            { linha: 'SARRAFO 6mm',           p: [257.06, 294.71, 332.33, 413.83, 523.81] },
-            { linha: 'SÓLIDA',                p: [361.44, 396.76, 432.08, 508.92, 612.69] },
+            { linha: 'COLMEIA — SARRAFO 3mm', p: [268.14, 307.07, 346.02, 430.73, 545.14] },
+            { linha: 'SARRAFO 6mm',           p: [283.41, 324.92, 366.39, 456.25, 577.5] },
+            { linha: 'SÓLIDA',                p: [398.49, 437.42, 476.37, 561.09, 675.49] },
           ]},
           { nome: 'MELAMÍNICO CURUPIXA', tipo: 'curupixa', itens: [
-            { linha: 'COLMEIA — SARRAFO 3mm', p: [259.95, 298.51, 337.06, 419.83, 531.58] },
-            { linha: 'SARRAFO 6mm',           p: [272.70, 313.40, 354.11, 441.13, 558.64] },
-            { linha: 'SÓLIDA',                p: [378.18, 416.74, 455.30, 538.07, 649.82] },
+            { linha: 'COLMEIA — SARRAFO 3mm', p: [286.6, 329.11, 371.62, 462.87, 586.07] },
+            { linha: 'SARRAFO 6mm',           p: [300.65, 345.53, 390.4, 486.34, 615.9] },
+            { linha: 'SÓLIDA',                p: [416.95, 459.46, 501.97, 593.22, 716.43] },
           ]},
           { nome: 'MELAMÍNICO ITALY / MOCACCINO / MARFIM / CARVALHO / IMBUIA / FREIJO', tipo: 'italy', itens: [
-            { linha: 'COLMEIA — SARRAFO 3mm', p: [286.04, 328.70, 371.37, 462.66, 585.88] },
-            { linha: 'SARRAFO 6mm',           p: [299.43, 344.34, 389.29, 485.02, 614.30] },
-            { linha: 'SÓLIDA',                p: [404.27, 446.94, 489.61, 580.89, 704.12] },
+            { linha: 'COLMEIA — SARRAFO 3mm', p: [315.35, 362.4, 409.44, 510.08, 645.93] },
+            { linha: 'SARRAFO 6mm',           p: [330.12, 379.64, 429.18, 534.73, 677.27] },
+            { linha: 'SÓLIDA',                p: [445.72, 492.75, 539.79, 640.43, 776.3] },
           ]},
         ]
       },
@@ -755,12 +818,12 @@ const portasUVData = {
         nome: 'SOFISTICATO', sub: 'HDF Superflora 3mm · 40mm',
         grupos: [
           { nome: 'MELAMÍNICO CURUPIXA', tipo: 'curupixa', itens: [
-            { linha: 'SARRAFO 6mm', p: [364.82, 420.95, 477.09, 594.88, 753.90] },
-            { linha: 'SÓLIDA',     p: [483.05, 539.19, 595.32, 713.12, 872.13] },
+            { linha: 'SARRAFO 6mm', p: [402.21, 464.1, 525.99, 655.85, 831.17] },
+            { linha: 'SÓLIDA',     p: [532.57, 594.45, 656.34, 786.21, 961.52] },
           ]},
           { nome: 'MELAMÍNICO ITALY / MOCACCINO / MARFIM / CARVALHO / IMBUIA / FREIJO', tipo: 'italy', itens: [
-            { linha: 'SARRAFO 6mm', p: [383.06, 442.00, 500.94, 624.62, 791.58] },
-            { linha: 'SÓLIDA',     p: [507.21, 566.15, 625.09, 748.77, 915.74] },
+            { linha: 'SARRAFO 6mm', p: [422.32, 487.31, 552.29, 688.65, 872.72] },
+            { linha: 'SÓLIDA',     p: [559.19, 624.18, 689.16, 825.53, 1009.61] },
           ]},
         ]
       },

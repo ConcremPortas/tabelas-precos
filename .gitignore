@@ -15,3 +15,9 @@ dist/
 # OS
 .DS_Store
 Thumbs.db
+
+# Backups locais
+*.bak
+
+# Arquivo de entrada (prompt de preços)
+prompr-de-preco

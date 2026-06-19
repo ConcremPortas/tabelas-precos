@@ -245,7 +245,7 @@ function aplicarPermissoes() {
   const p = window.permissoes;
   const map = {
     fabrica:'ver_canal_fabrica', distribuidora:'ver_canal_distribuidora',
-    dag:'ver_canal_dag', elo:'ver_canal_elo'
+    dag:'ver_canal_dag', elo:'ver_canal_elo', suframa:'ver_canal_elo'
   };
   document.querySelectorAll('.ch-btn').forEach(btn => {
     const k = map[btn.dataset.channel];

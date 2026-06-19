@@ -573,7 +573,7 @@
     opacity: 1;
     color: var(--color-primary);
   }
-  .ch-fabrica, .ch-distribuidora, .ch-dag, .ch-elo { color: var(--color-primary); }
+  .ch-fabrica, .ch-distribuidora, .ch-dag, .ch-elo, .ch-suframa { color: var(--color-primary); }
 
   /* ── EMPTY STATE ─────────────────────────────── */
   .empty-state {

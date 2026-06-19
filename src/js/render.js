@@ -115,28 +115,47 @@ function renderPortasELO() {
   return html;
 }
 
-// ── BATENTE ELO RENDER ────────────────────────────────
+// ── BATENTE / ALIZAR / KIT ELO RENDER ─────────────────
 function renderBatenteELO() {
+  const activeTab = subTabState[currentSection] || 'batente';
   const ch = CHANNELS[currentChannel];
   const m = ch.mult;
-  const base = eloAcabBase.batente;
-  const scaled = {
-    ...base,
-    grupos: base.grupos.map(g => ({
-      ...g,
-      itens: g.itens.map(it => ({ ...it, preco: it.preco * m, protect: it.protect * m }))
-    }))
+  const base = eloAcabBase;
+  const scaleP = g => ({ ...g, itens: g.itens.map(it => ({ ...it, preco: it.preco * m, protect: it.protect * m })) });
+  const data = {
+    batente:   { ...base.batente,   grupos: base.batente.grupos.map(scaleP) },
+    alizar9:   { ...base.alizar9,   grupos: base.alizar9.grupos.map(scaleP) },
+    alizar15:  { ...base.alizar15,  grupos: base.alizar15.grupos.map(scaleP) },
+    kitCorrer: { ...base.kitCorrer, itens: base.kitCorrer.itens.map(it => ({ ...it, preco: it.preco * m })) },
   };
+  const TABS = [
+    { id: 'batente',   label: 'Batente' },
+    { id: 'alizar9',   label: 'Alizar 9mm' },
+    { id: 'alizar15',  label: 'Alizar 15mm' },
+    { id: 'kitCorrer', label: 'Kit Correr' },
+  ];
+  const tabBar = `<div class="inner-tabs-bar">${TABS.map(t =>
+    `<button class="inner-tab${activeTab === t.id ? ' active' : ''}" onclick="switchTab('${t.id}')">${t.label}</button>`
+  ).join('')}</div>`;
+  let tabContent;
+  switch (activeTab) {
+    case 'alizar9':   tabContent = renderProtectTable(data.alizar9);     break;
+    case 'alizar15':  tabContent = renderProtectTable(data.alizar15);    break;
+    case 'kitCorrer': tabContent = renderKitCorrerTable(data.kitCorrer); break;
+    default:          tabContent = renderProtectTable(data.batente);     break;
+  }
+  const multNote = m !== 1 ? ` — ×${m.toFixed(2)}` : '';
   return `
     <div class="page-header">
-      <div class="page-title">Batente & Alizar ELO</div>
+      <div class="page-title">Batente · Alizar · Kit ELO</div>
       <div class="page-meta">
         <span class="meta-pill">MDF Superflora · ELO</span>
         Preços em BRL · ${new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}
       </div>
     </div>
-    <div class="channel-indicator ${ch.cls}">${ch.label}${m !== 1 ? ` — ×${m.toFixed(2)}` : ''}</div>
-    ${renderProtectTable(scaled)}`;
+    <div class="channel-indicator ${ch.cls}">${ch.label}${multNote}</div>
+    ${tabBar}
+    ${tabContent}`;
 }
 
 // ── LACCA ACAB: TAB SWITCH ────────────────────────────
@@ -603,7 +622,7 @@ function printSection() {
   const m   = ch.mult;
   const LOGO = new URL('Logos/logo-cores.png', window.location.href).href;
   const dateStr = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
-  const CH_PDF = { fabrica: 'FÁBRICA', distribuidora: 'DISTRIBUIDORA', dag: 'DISTRIBUIDORA/DAG', elo: 'ELO / DISTRIBUIDORA ELO' };
+  const CH_PDF = { fabrica: 'FÁBRICA', distribuidora: 'DISTRIBUIDORA', dag: 'DISTRIBUIDORA/DAG', elo: 'ELO DISTRIBUIDORA', suframa: 'ELO SUFRAMA' };
   const chLabel = CH_PDF[currentChannel] || ch.label.toUpperCase();
   const SEC_NAMES = {
     portasLacca: 'Portas LACCA', portasUV: 'Portas UV / Melamínico',
