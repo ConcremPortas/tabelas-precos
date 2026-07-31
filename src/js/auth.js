@@ -535,7 +535,7 @@ function renderUsuarios() {
           <input type="hidden" id="senha-usuario-email">
           <p id="senha-usuario-info" style="margin-bottom:14px;font-size:13px;color:#6b7280"></p>
           <label class="form-label">Nova senha
-            <input id="nova-senha" type="password" class="form-input" placeholder="Mínimo 6 caracteres">
+            <input id="nova-senha" type="password" class="form-input" placeholder="Mínimo 8 caracteres">
           </label>
           <label class="form-label">Confirmar senha
             <input id="confirmar-senha" type="password" class="form-input" placeholder="Repita a nova senha">
@@ -767,24 +767,47 @@ async function salvarNovaSenha() {
   const errEl  = document.getElementById('senha-erro');
 
   if (!nova)          { errEl.textContent = 'Digite a nova senha.'; return; }
-  if (nova.length < 6){ errEl.textContent = 'Senha mínima: 6 caracteres.'; return; }
+  if (nova.length < 8){ errEl.textContent = 'Senha mínima: 8 caracteres.'; return; }
   if (nova !== conf)  { errEl.textContent = 'As senhas não coincidem.'; return; }
 
   errEl.style.color = '#718096';
   errEl.textContent = 'Salvando…';
 
-  // Usuário alterando a própria senha
-  if (userId === window.currentUser?.id) {
-    const { error } = await _sb.auth.updateUser({ password: nova });
-    if (error) { errEl.style.color = '#dc2626'; errEl.textContent = _traduzErroAuth(error.message); return; }
-    fecharModal('modal-alterar-senha');
-    alert('Senha alterada com sucesso!');
+  const proprio = userId === window.currentUser?.id;
+
+  // A troca passa por Edge Function com service_role, que valida permissão e
+  // histórico das últimas 5 senhas. Funções separadas de propósito: a de terceiros
+  // exige nível administrador e o id do alvo.
+  let msgErro = '';
+  try {
+    const { data: result, error } = await _sb.functions.invoke(
+      proprio ? 'alterar-senha' : 'alterar-senha-usuario',
+      { body: proprio ? { nova_senha: nova } : { nova_senha: nova, usuario_id: userId } }
+    );
+    if (error) {
+      try {
+        const parsed = typeof error.context?.json === 'function'
+          ? await error.context.json()
+          : null;
+        msgErro = parsed?.error || error.message || '';
+      } catch {
+        msgErro = error.message || '';
+      }
+    } else if (result?.error) {
+      msgErro = result.error;
+    }
+  } catch (e) {
+    msgErro = e.message || 'Erro inesperado.';
+  }
+
+  if (msgErro) {
+    errEl.style.color = '#dc2626';
+    errEl.textContent = _traduzErroAuth(msgErro);
     return;
   }
 
-  // Admin alterando senha de outro usuário — envia e-mail de reset
-  const { error } = await _sb.auth.resetPasswordForEmail(email);
-  if (error) { errEl.style.color = '#dc2626'; errEl.textContent = error.message; return; }
   fecharModal('modal-alterar-senha');
-  alert(`E-mail de redefinição de senha enviado para ${email}.\n\nO usuário receberá um link para criar uma nova senha.`);
+  alert(proprio
+    ? 'Senha alterada com sucesso!'
+    : `Senha de ${email} alterada com sucesso.`);
 }

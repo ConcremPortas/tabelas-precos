@@ -51,7 +51,7 @@ serve(async (req: Request) => {
         'Access-Control-Allow-Origin': '*',
       },
     });
-  } catch (err) {
+  } catch {
     return new Response(JSON.stringify({ success: false, error: 'Erro interno' }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },

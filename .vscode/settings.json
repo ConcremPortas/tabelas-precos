@@ -1,0 +1,9 @@
+{
+  "// Deno": "As Edge Functions rodam em Deno, não em Node. Sem isto, o TypeScript do VS Code acusa erros falsos (Cannot find name 'Deno', imports por URL, etc.).",
+  "deno.enable": true,
+  "deno.enablePaths": ["supabase/functions"],
+  "deno.lint": true,
+  "[typescript]": {
+    "editor.defaultFormatter": "denoland.vscode-deno"
+  }
+}
