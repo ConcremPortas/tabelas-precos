@@ -3,6 +3,23 @@
 Template de referência para apps web com Vanilla JS + Supabase + Vercel.
 Leia antes de qualquer alteração. Preencha os placeholders ao reutilizar.
 
+## 🧠 Cérebro de engenharia (consultar antes de codar)
+
+Antes de uma mudança relevante (nova tela, refatoração, feature, correção sensível), **consulte e siga** o cérebro de engenharia no vault do Obsidian: `obsidian/kmz/Aplicações/Cérebro/Cérebro — Índice.md` e o pilar aplicável (Arquitetura, Qualidade/Refatoração, Segurança, Padrões Supabase, Testes, Métricas/Fórmulas, Metodologia). Em conflito, **este `CLAUDE.md` (contexto do projeto) prevalece** sobre as regras genéricas do cérebro.
+
+## 📓 Sincronização com o Obsidian (OBRIGATÓRIO)
+
+Este projeto é documentado no vault do Obsidian, usado para leitura/consulta. **Sempre que você fizer uma alteração relevante** (nova tela/seção, nova funcionalidade, mudança de regra de negócio, mudança de stack/escopo/status, novo fluxo ou remoção de recurso), **atualize a nota correspondente**:
+
+`C:\Users\1kmz\OneDrive\Documentos\obsidian\kmz\Aplicações\Tabela de Preços Concrem.md`
+
+Regras:
+- Escreva em português, descrevendo **funcionalidades das telas/seções** (o que faz, ações do usuário, regras de negócio). Não cole código na nota.
+- **Cada tela/seção tem sua própria nota** na pasta `obsidian/kmz/Aplicações/Telas - Tabela de Preços/`, nomeada `Precos — <Nome>.md` (com frontmatter `projeto:` e, no corpo, `**Projeto:** [[Tabela de Preços Concrem]]`). Ao criar uma seção nova, crie a nota dela nesse padrão e adicione o link no índice `## Telas / Seções` da nota-mãe; ao alterar uma seção, atualize a nota dela.
+- Se mudar stack, status ou escopo, atualize o frontmatter e o resumo da nota.
+- Mantenha a nota clara e sem abreviações — ela é a fonte de leitura do projeto.
+- Ao final da tarefa, confirme no resumo se a nota foi atualizada (ou que não havia mudança relevante a documentar).
+
 | Placeholder | Substituir por |
 |-------------|---------------|
 | `[PROJECT_NAME]` | Nome do projeto |
