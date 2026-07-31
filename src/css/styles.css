@@ -2590,7 +2590,7 @@
 }
 .lm-filters .cs-wrapper {
   width: auto;
-  flex: 1;
+  flex: 1 1 160px;   /* base equilibrada para os quatro filtros; quebra em pares */
   min-width: 150px;
 }
 .lm-filters .cs-trigger {
@@ -2612,6 +2612,13 @@
 }
 .lm-select:hover { border-color: var(--color-primary); }
 .lm-select:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(22,163,74,0.12); }
+
+/* Telas estreitas: um filtro por linha. Sem isto, o min-width de 150px de dois
+   seletores lado a lado estouraria a largura e criaria rolagem horizontal. */
+@media (max-width: 560px) {
+  .lm-filters .cs-wrapper { flex: 1 1 100%; min-width: 0; }
+  .lm-filters .lm-select  { width: 100%; min-width: 0; }
+}
 
 .lm-print-btn {
   display: inline-flex;
@@ -2939,4 +2946,63 @@
 }
 .turnstile-status.verified {
   color: #16a34a;
+}
+
+/* ── ORDENAÇÃO DE TABELAS (compartilhado — window.AppTableSort) ──────────────
+   Classes globais usadas por todas as tabelas ordenáveis. O botão herda a
+   aparência do <th> em que está, então não altera largura, altura, sticky nem
+   alinhamento de nenhuma tela. Nada de estilo global em button ou th. */
+.app-sort-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  text-align: inherit;
+  cursor: pointer;
+  border-radius: 3px;
+}
+.app-sort-btn:hover:not(:disabled) { color: var(--color-primary); }
+.app-sort-btn:disabled { cursor: default; opacity: 0.55; }
+.app-sort-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(22,163,74,0.25);
+}
+.app-sort-icon {
+  font-size: 13px;
+  line-height: 1;
+  flex-shrink: 0;
+  opacity: 0.45;
+}
+.app-sort-active .app-sort-btn  { color: var(--color-primary); }
+.app-sort-active .app-sort-icon { opacity: 1; }
+
+/* Rótulo só para leitor de tela: o estado não fica apenas no desenho da seta */
+.app-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Cabeçalhos com alinhamento à direita (preços) mantêm o botão à direita */
+th.th-price .app-sort-btn,
+th.gt-th-right .app-sort-btn { justify-content: flex-end; }
+
+@media print {
+  .app-sort-icon { display: none; }
+  .app-sort-btn  { color: inherit !important; }
 }

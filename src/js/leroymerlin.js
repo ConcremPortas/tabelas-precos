@@ -5,8 +5,31 @@ var _lmActiveTipo   = '';
 var _lmFiltroModelo = '';
 var _lmFiltroLocal  = '';
 var _lmFiltroLinha  = '';
+var _lmFiltroTamanho = '';  // largura_tipo — categórico textual, nunca medida
 var _lmEditMode     = false;
 var _lmPending      = {};   // id → { campo: valor }
+var _lmSort         = AppTableSort.newState();   // { key, direction } — '' = ordem do banco
+
+// ── ORDENAÇÃO: CONFIGURAÇÃO DAS COLUNAS ───────────────────────────────────────
+// key = campo em concremtp_leroy · label = título exibido · type = regra de comparação.
+// Fonte única do cabeçalho e da ordenação: título e chave não ficam mais espalhados.
+var _LM_COLS = [
+  { key: 'batente',       label: 'BATENTE',       type: 'text' },
+  { key: 'modelo',        label: 'MODELO',        type: 'text' },
+  { key: 'local',         label: 'LOCAL',         type: 'text' },
+  { key: 'linha_cor',     label: 'LINHA/COR',     type: 'text' },
+  { key: 'largura_tipo',  label: 'LARGURA',       type: 'text' },
+  { key: 'preco_leroy',   label: 'PREÇO LEROY',   type: 'currency' },
+  // Valor visual: mesma função usada na renderização (com reajuste aplicado).
+  { key: 'preco_concrem', label: 'PREÇO CONCREM', type: 'currency', getValue: function(r) { return _lmPrecoConcrem(r); } },
+  { key: 'frete',         label: 'FRETE',         type: 'currency' },
+  // !! porque a tela exibe null como "Não": a ordenação segue o que se vê.
+  { key: 'reajustar',     label: 'REAJUSTAR',     type: 'boolean', getValue: function(r) { return !!r.reajustar; } },
+];
+
+// Collator compartilhado (pt-BR, numeric, sensitivity base) — usado também pelo
+// filtro de tamanho.
+var _lmCollator = AppTableSort.collator;
 
 // ── RENDER ESQUELETO ──────────────────────────────────────────────────────────
 
@@ -56,6 +79,7 @@ async function carregarLeroyMerlin() {
   _lmFiltroModelo = '';
   _lmFiltroLocal  = '';
   _lmFiltroLinha  = '';
+  _lmFiltroTamanho = '';
 
   _lmRenderContainer(container);
 }
@@ -73,6 +97,8 @@ function _lmRenderContainer(container) {
   var modelos  = _lmUniq(tipoData.map(function(r) { return r.modelo; }));
   var locais   = _lmUniq(tipoData.map(function(r) { return r.local; }));
   var linhas   = _lmUniq(tipoData.map(function(r) { return r.linha_cor; }));
+  // Tamanhos derivados só da aba ativa, ordenados com o collator pt-BR
+  var tamanhos = _lmUniqTamanhos(tipoData.map(function(r) { return r.largura_tipo; }));
 
   var tabBar = '<div class="inner-tabs-bar">'
     + tipos.map(function(t) {
@@ -83,7 +109,8 @@ function _lmRenderContainer(container) {
     + '</div>';
 
   function sel(campo, opts, current, label) {
-    return '<select class="lm-select" onchange="lmSetFiltro(\'' + campo + '\', this.value)">'
+    return '<select class="lm-select" id="lm-filtro-' + campo + '"'
+      + ' onchange="lmSetFiltro(\'' + campo + '\', this.value)">'
       + '<option value="">' + label + '</option>'
       + opts.map(function(v) {
           return '<option value="' + _lmEsc(v) + '"' + (v === current ? ' selected' : '') + '>'
@@ -102,9 +129,10 @@ function _lmRenderContainer(container) {
     tabBar
     + '<div class="lm-toolbar">'
     + '<div class="lm-filters">'
-    + sel('modelo', modelos, _lmFiltroModelo, 'Todos os modelos')
-    + sel('local',  locais,  _lmFiltroLocal,  'Todos os locais')
-    + sel('linha',  linhas,  _lmFiltroLinha,  'Todas as linhas')
+    + sel('modelo',  modelos,  _lmFiltroModelo,  'Todos os modelos')
+    + sel('local',   locais,   _lmFiltroLocal,   'Todos os locais')
+    + sel('linha',   linhas,   _lmFiltroLinha,   'Todas as linhas')
+    + sel('tamanho', tamanhos, _lmFiltroTamanho, 'Todos os tamanhos')
     + '</div>'
     + '<div class="lm-toolbar-actions">' + actionsHtml + '</div>'
     + '</div>'
@@ -157,9 +185,11 @@ function _lmInjectButtons() {
 function lmSetTipo(tipo) {
   if (_lmEditMode) return;
   _lmActiveTipo   = tipo;
+  // Filtros zeram porque as opções são derivadas da aba; a ordenação, não.
   _lmFiltroModelo = '';
   _lmFiltroLocal  = '';
   _lmFiltroLinha  = '';
+  _lmFiltroTamanho = '';
   var container = document.getElementById('lm-content');
   if (container) _lmRenderContainer(container);
 }
@@ -171,21 +201,67 @@ function _lmFiltrar(rows) {
     if (_lmFiltroModelo && r.modelo    !== _lmFiltroModelo) return false;
     if (_lmFiltroLocal  && r.local     !== _lmFiltroLocal)  return false;
     if (_lmFiltroLinha  && r.linha_cor !== _lmFiltroLinha)  return false;
+    // Igualdade exata sobre texto: largura_tipo é categórico, não medida.
+    if (_lmFiltroTamanho && String(r.largura_tipo == null ? '' : r.largura_tipo) !== _lmFiltroTamanho) return false;
     return true;
   });
 }
 
 function lmSetFiltro(campo, valor) {
   if (_lmEditMode) return;
-  if (campo === 'modelo') _lmFiltroModelo = valor;
-  if (campo === 'local')  _lmFiltroLocal  = valor;
-  if (campo === 'linha')  _lmFiltroLinha  = valor;
+  if (campo === 'modelo')  _lmFiltroModelo  = valor;
+  if (campo === 'local')   _lmFiltroLocal   = valor;
+  if (campo === 'linha')   _lmFiltroLinha   = valor;
+  if (campo === 'tamanho') _lmFiltroTamanho = valor;
   var tipoData = _lmData.filter(function(r) { return r.tipo === _lmActiveTipo; });
   var wrap = document.getElementById('lm-table-wrap');
   if (wrap) {
     wrap.innerHTML = _lmRenderTabela(_lmFiltrar(tipoData));
-    if (typeof applySearch === 'function') applySearch();
+    if (typeof window.applySearch === 'function') window.applySearch();
   }
+}
+
+// ── ORDENAÇÃO ─────────────────────────────────────────────────────────────────
+
+// Valor de PREÇO CONCREM exatamente como o usuário o vê: com o multiplicador de
+// reajuste fora do modo de edição e o valor base dentro dele (é o que aparece nos
+// inputs). Fonte única para exibição e ordenação — evita fórmulas divergentes.
+function _lmPrecoConcrem(r) {
+  var n = parseFloat(r.preco_concrem) || 0;
+  if (!_lmEditMode && typeof rjGetM === 'function') {
+    n = n * rjGetM('Leroy Merlin', 'leroy', r.linha_cor);
+  }
+  return n;
+}
+
+// Devolve um NOVO array ordenado. Nunca ordena _lmData nem o array recebido.
+function _lmOrdenar(rows) {
+  return AppTableSort.sortRows(rows, _lmSort, _LM_COLS);
+}
+
+// Ciclo: crescente → decrescente → ordem original do banco.
+function lmSortBy(key) {
+  if (_lmEditMode) return;
+  _lmSort = AppTableSort.nextState(_lmSort, key, _LM_COLS);
+
+  var tipoData = _lmData.filter(function(r) { return r.tipo === _lmActiveTipo; });
+  var wrap = document.getElementById('lm-table-wrap');
+  if (!wrap) return;
+
+  wrap.innerHTML = _lmRenderTabela(_lmFiltrar(tipoData));
+
+  // A busca global esconde <tr> no DOM; remontar a tabela apaga isso.
+  if (typeof window.applySearch === 'function') window.applySearch();
+
+  // O botão clicado foi destruído no re-render: devolve o foco para não perdê-lo
+  // no <body> e quebrar a navegação por teclado.
+  var btn = wrap.querySelector('[data-sort-key="' + key + '"]');
+  if (btn) btn.focus();
+}
+
+// <th> ordenável, montado pela infraestrutura compartilhada.
+function _lmTh(col) {
+  return AppTableSort.header(col, _lmSort, "lmSortBy('" + col.key + "')", { disabled: _lmEditMode });
 }
 
 // ── RENDERIZAR TABELA ─────────────────────────────────────────────────────────
@@ -200,15 +276,16 @@ function _lmRenderTabela(rows) {
 
   var canDel = _lmEditMode && temPermissao('remover_itens_tabela');
 
+  // Ponto único de ordenação: cobre as chamadas da renderização inicial, da troca
+  // de filtros e da remoção de item. A zebra é recalculada pelo novo índice.
+  rows = _lmOrdenar(rows);
+
   var trs = rows.map(function(r, i) {
     var reajCls = r.reajustar ? 'lm-badge-sim' : 'lm-badge-nao';
     var reajTxt = r.reajustar ? 'Sim' : 'Não';
     var zebra   = i % 2 !== 0 ? ' lm-zebra' : '';
 
-    var precoConcrem = parseFloat(r.preco_concrem) || 0;
-    if (!_lmEditMode && typeof rjGetM === 'function') {
-      precoConcrem = precoConcrem * rjGetM('Leroy Merlin', 'leroy', r.linha_cor);
-    }
+    var precoConcrem = _lmPrecoConcrem(r);
 
     if (_lmEditMode) {
       var pend = _lmPending[r.id] || {};
@@ -249,12 +326,10 @@ function _lmRenderTabela(rows) {
       + '</tr>';
   }).join('');
 
-  var extraTh = canDel ? '<th></th>' : '';
+  var extraTh = canDel ? '<th></th>' : '';   // coluna de exclusão: não é ordenável
   return '<table class="lm-table">'
     + '<thead><tr>'
-    + '<th>BATENTE</th><th>MODELO</th><th>LOCAL</th>'
-    + '<th>LINHA/COR</th><th>LARGURA</th>'
-    + '<th>PREÇO LEROY</th><th>PREÇO CONCREM</th><th>FRETE</th><th>REAJUSTAR</th>'
+    + _LM_COLS.map(_lmTh).join('')
     + extraTh
     + '</tr></thead>'
     + '<tbody>' + trs + '</tbody>'
@@ -406,7 +481,7 @@ function lmImprimirTodos() {
 
 function lmExportarCSV() {
   var tipoData = _lmData.filter(function(r) { return r.tipo === _lmActiveTipo; });
-  var rows = _lmFiltrar(tipoData);
+  var rows = _lmOrdenar(_lmFiltrar(tipoData));   // mesma ordem exibida na tabela
   if (!rows.length) { alert('Nenhum dado para exportar.'); return; }
 
   var header = ['TIPO','BATENTE','MODELO','LOCAL','LINHA/COR','LARGURA','PRECO_LEROY','PRECO_CONCREM','FRETE','REAJUSTAR'];
@@ -452,6 +527,17 @@ function _lmEsc(s) {
 
 function _lmUniq(arr) {
   return arr.filter(function(v, i, a) { return v && a.indexOf(v) === i; }).sort();
+}
+
+// Únicos + ordenação com o collator pt-BR (entende números dentro do texto:
+// "60 a 82" antes de "90 a 92" antes de "100"). Separado de _lmUniq para não
+// mexer na ordem já existente dos outros três filtros.
+function _lmUniqTamanhos(arr) {
+  return arr
+    .filter(function(v, i, a) {
+      return v != null && String(v).trim() !== '' && a.indexOf(v) === i;
+    })
+    .sort(function(a, b) { return _lmCollator.compare(String(a), String(b)); });
 }
 
 // ── HOOK onAfterRender ────────────────────────────────────────────────────────

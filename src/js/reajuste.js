@@ -883,10 +883,34 @@ function rjApply() {
   }
 }
 
+// ── ORDENAÇÃO DO HISTÓRICO EM "APLICAR REAJUSTE" ─────────────────────────────
+// Estado próprio: é outra tela, com outra coluna de ação. O botão "Desfazer"
+// continua saindo só no registro mais recente de cada produto+canal+linha,
+// porque isso é calculado por registro e não pela posição na tabela.
+const RJH_COLS = [
+  { key: 'dataHora',    label: 'Data/Hora',   type: 'datetime' },
+  { key: 'produto',     label: 'Produto',     type: 'text' },
+  { key: 'canal',       label: 'Canal',       type: 'text', getValue: e => RJ_CANAL_LABELS[e.canal] || e.canal },
+  { key: 'linha',       label: 'Linha',       type: 'text', getValue: e => (!e.linha || e.linha === '___all') ? 'Todas' : e.linha },
+  { key: 'porcentagem', label: 'Porcentagem', type: 'percentage' },
+  { key: 'sampleAntes', label: 'Base Antes',  type: 'currency', thAttrs: 'style="text-align:right"' },
+  { key: 'motivo',      label: 'Motivo',      type: 'text' },
+  { key: 'acoes',       label: '',            sortable: false },
+];
+
+let _rjhSort = AppTableSort.newState();
+
+function rjhSortBy(key) {
+  _rjhSort = AppTableSort.nextState(_rjhSort, key, RJH_COLS);
+  rjRenderHistorico();
+  const btn = document.querySelector('#rj-hist-content [data-sort-key="' + key + '"]');
+  if (btn) btn.focus();
+}
+
 // 11. Histórico
 function rjRenderHistorico() {
   const d    = rjLoad();
-  const hist = [...d.historico].reverse();
+  const hist = AppTableSort.sortRows([...d.historico].reverse(), _rjhSort, RJH_COLS);
   const el   = document.getElementById('rj-hist-content');
 
   if (!hist.length) {
@@ -926,11 +950,7 @@ function rjRenderHistorico() {
   el.innerHTML = `
     <div style="overflow-x:auto">
       <table class="rj-hist-tbl">
-        <thead><tr>
-          <th>Data/Hora</th><th>Produto</th><th>Canal</th><th>Linha</th>
-          <th>Porcentagem</th><th style="text-align:right">Base Antes</th>
-          <th>Motivo</th><th></th>
-        </tr></thead>
+        <thead><tr>${AppTableSort.headerRow(RJH_COLS, _rjhSort, c => `rjhSortBy('${c.key}')`, {})}</tr></thead>
         <tbody>${rows}</tbody>
       </table>
     </div>`;
@@ -1101,6 +1121,30 @@ function hrToggleDetail(id) {
   if (btn) btn.textContent = opening ? 'Ocultar ▲' : 'Ver detalhes ▼';
 }
 
+// ── ORDENAÇÃO DO HISTÓRICO (window.AppTableSort) ─────────────────────────────
+// Ordena apenas o DETALHAMENTO. Cards e Linha do Tempo mantêm a lógica própria:
+// a timeline agrupa por dia e perderia o sentido fora da ordem cronológica.
+const HR_COLS = [
+  { key: 'dataHora',    label: 'Data / Hora', type: 'datetime' },
+  { key: 'produto',     label: 'Produto',     type: 'text' },
+  { key: 'canal',       label: 'Canal',       type: 'text', getValue: e => RJ_CANAL_LABELS[e.canal] || e.canal },
+  // "___all" é exibido como "Todas as linhas"; ordena por esse rótulo.
+  { key: 'linha',       label: 'Linha',       type: 'text', getValue: e => e.linha === '___all' ? 'Todas as linhas' : e.linha },
+  { key: 'porcentagem', label: '%',           type: 'percentage' },
+  { key: 'sampleAntes', label: 'Base Antes',  type: 'currency' },
+  { key: 'motivo',      label: 'Motivo',      type: 'text' },
+  { key: 'acoes',       label: '',            sortable: false },
+];
+
+let _hrSort = AppTableSort.newState();
+
+function hrSortBy(key) {
+  _hrSort = AppTableSort.nextState(_hrSort, key, HR_COLS);
+  _hrRefresh();
+  const btn = document.querySelector('#hr-body [data-sort-key="' + key + '"]');
+  if (btn) btn.focus();
+}
+
 function _hrTable(entries) {
   if (!entries.length) {
     return `<div class="hr-empty">
@@ -1111,7 +1155,9 @@ function _hrTable(entries) {
   const fmtPct = v => `<span class="${v > 0 ? 'hr-pct-pos' : 'hr-pct-neg'}">${v > 0 ? '+' : ''}${v.toFixed(2).replace('.', ',')}%</span>`;
   const fmtCur = v => v != null ? v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : '—';
 
-  const rows = entries.flatMap(e => {
+  // Ordena os REGISTROS antes de montar as linhas: assim a linha de detalhe
+  // continua imediatamente após a sua linha principal.
+  const rows = AppTableSort.sortRows(entries, _hrSort, HR_COLS).flatMap(e => {
     const dt  = new Date(e.dataHora);
     const dtF = dt.toLocaleDateString('pt-BR') + ' ' + dt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
     const isAll = e.linha === '___all';
@@ -1172,10 +1218,7 @@ function _hrTable(entries) {
 
   return `<div class="hr-tbl-wrap">
     <table class="hr-tbl">
-      <thead><tr>
-        <th>Data / Hora</th><th>Produto</th><th>Canal</th><th>Linha</th>
-        <th>%</th><th>Base Antes</th><th>Motivo</th><th></th>
-      </tr></thead>
+      <thead><tr>${AppTableSort.headerRow(HR_COLS, _hrSort, c => `hrSortBy('${c.key}')`)}</tr></thead>
       <tbody>${rows}</tbody>
     </table>
   </div>`;
@@ -1217,7 +1260,8 @@ function hrExportCSV() {
   if (!entries.length) { alert('Nenhum reajuste para exportar neste período.'); return; }
   const monthName = new Date(_hrYear, _hrMonth, 1).toLocaleString('pt-BR', { month: 'long', year: 'numeric' });
   const header = ['Data/Hora', 'Produto', 'Canal', 'Linha', 'Porcentagem (%)', 'Base Antes', 'Motivo'];
-  const rows = entries.map(e => [
+  // Acompanha a ordenação da tela: é a exportação da visualização atual.
+  const rows = AppTableSort.sortRows(entries, _hrSort, HR_COLS).map(e => [
     new Date(e.dataHora).toLocaleString('pt-BR'),
     `"${e.produto}"`,
     RJ_CANAL_LABELS[e.canal] || e.canal,

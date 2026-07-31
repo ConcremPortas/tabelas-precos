@@ -935,9 +935,68 @@ function gtRenderList() {
   else if (_gtActiveTab === 'leroy') el.innerHTML = _gtLeroyList();
 }
 
+// ── ORDENAÇÃO DAS LISTAS (window.AppTableSort) ───────────────────────────────
+// getValue devolve o valor EXIBIDO (rótulo traduzido, campo composto), para a
+// ordem bater com o que se lê na tela. O fallback visual '—' fica de fora: o
+// valor cru vazio precisa ser reconhecido como ausente e ir para o fim.
+
+const GT_GRUPOS_COLS = [
+  { key: 'produto',   label: 'Produto',       type: 'text', getValue: g => _gtProdLabel(g.produto) },
+  { key: 'canal',     label: 'Canal',         type: 'text', getValue: g => _gtCanalLabel(g.canal) },
+  { key: 'nome',      label: 'Nome do Grupo', type: 'text' },
+  { key: 'descricao', label: 'Descrição',     type: 'text' },
+  { key: 'cor',       label: 'Cor',           sortable: false },   // amostra visual
+  { key: 'criado_em', label: 'Criado em',     type: 'date' },
+  { key: 'acoes',     label: 'Ações',         sortable: false },
+];
+
+const GT_LINHAS_COLS = [
+  { key: 'produto',    label: 'Produto',           type: 'text', getValue: l => _gtProdLabel(l.produto) },
+  { key: 'canal',      label: 'Canal',             type: 'text', getValue: l => _gtCanalLabel(l.canal) },
+  { key: 'grupo',      label: 'Grupo',             type: 'text', getValue: l => l.colecao || l.linha },
+  { key: 'tipo',       label: 'Tipo',              type: 'text', getValue: l => GT_TIPO_LABELS[l.tipo] || l.tipo },
+  { key: 'linha',      label: 'Linha / Descrição', type: 'text', getValue: l => l.linha || l.acabamento },
+  { key: 'acabamento', label: 'Acabamento',        type: 'text' },
+  { key: 'criado_em',  label: 'Criado em',         type: 'date' },
+  { key: 'acoes',      label: 'Ações',             sortable: false },
+];
+
+const GT_LEROY_COLS = [
+  { key: 'tipo',          label: 'Tipo',          type: 'text' },
+  { key: 'batente',       label: 'Batente',       type: 'text' },
+  { key: 'modelo',        label: 'Modelo',        type: 'text' },
+  { key: 'local',         label: 'Local',         type: 'text' },
+  { key: 'linha_cor',     label: 'Linha/Cor',     type: 'text' },
+  { key: 'largura_tipo',  label: 'Largura',       type: 'text' },
+  { key: 'preco_leroy',   label: 'Preço Leroy',   type: 'currency' },
+  { key: 'preco_concrem', label: 'Preço Concrem', type: 'currency' },
+  { key: 'acoes',         label: 'Ações',         sortable: false },
+];
+
+let _gtSort = { grupos: AppTableSort.newState(), linhas: AppTableSort.newState(), leroy: AppTableSort.newState() };
+
+const _GT_COLS_POR_ABA = { grupos: GT_GRUPOS_COLS, linhas: GT_LINHAS_COLS, leroy: GT_LEROY_COLS };
+
+function gtSortBy(aba, key) {
+  const cols = _GT_COLS_POR_ABA[aba];
+  if (!cols) return;
+  _gtSort[aba] = AppTableSort.nextState(_gtSort[aba], key, cols);
+  gtRenderList();
+  if (typeof window.applySearch === 'function') window.applySearch();
+  const btn = document.querySelector('#gt-list-content [data-sort-key="' + key + '"]');
+  if (btn) btn.focus();
+}
+
+function _gtThead(aba) {
+  const cols = _GT_COLS_POR_ABA[aba];
+  return '<thead><tr>'
+    + AppTableSort.headerRow(cols, _gtSort[aba], c => `gtSortBy('${aba}','${c.key}')`)
+    + '</tr></thead>';
+}
+
 function _gtGruposList() {
   if (!_gtGrupos.length) return '<div class="gt-list-empty">Nenhum grupo criado ainda.</div>';
-  const rows = _gtGrupos.map(g => `
+  const rows = AppTableSort.sortRows(_gtGrupos, _gtSort.grupos, GT_GRUPOS_COLS).map(g => `
     <tr>
       <td>${_gtEsc(_gtProdLabel(g.produto))}</td>
       <td><span class="gt-badge-canal">${_gtEsc(_gtCanalLabel(g.canal))}</span></td>
@@ -951,17 +1010,14 @@ function _gtGruposList() {
       </td>
     </tr>`).join('');
   return `<div class="gt-table-wrap"><table class="gt-list-table">
-    <thead><tr>
-      <th>Produto</th><th>Canal</th><th>Nome do Grupo</th>
-      <th>Descrição</th><th>Cor</th><th>Criado em</th><th>Ações</th>
-    </tr></thead>
+    ${_gtThead('grupos')}
     <tbody>${rows}</tbody>
   </table></div>`;
 }
 
 function _gtLinhasList() {
   if (!_gtLinhas.length) return '<div class="gt-list-empty">Nenhuma linha criada ainda.</div>';
-  const rows = _gtLinhas.map(l => {
+  const rows = AppTableSort.sortRows(_gtLinhas, _gtSort.linhas, GT_LINHAS_COLS).map(l => {
     const cor = GT_TIPO_COLORS[l.tipo] || '#64748b';
     return `<tr>
       <td>${_gtEsc(_gtProdLabel(l.produto))}</td>
@@ -980,11 +1036,7 @@ function _gtLinhasList() {
     </tr>`;
   }).join('');
   return `<div class="gt-table-wrap"><table class="gt-list-table">
-    <thead><tr>
-      <th>Produto</th><th>Canal</th><th>Grupo</th>
-      <th>Tipo</th><th>Linha / Descrição</th><th>Acabamento</th>
-      <th>Criado em</th><th>Ações</th>
-    </tr></thead>
+    ${_gtThead('linhas')}
     <tbody>${rows}</tbody>
   </table></div>`;
 }
@@ -1154,7 +1206,7 @@ function gtFecharModal() {
 // ── LEROY MERLIN: CRUD ───────────────────────────────────────────────────────
 function _gtLeroyList() {
   if (!_gtLeroyItems.length) return '<div class="gt-list-empty">Nenhum item Leroy Merlin encontrado.</div>';
-  const rows = _gtLeroyItems.map(r => {
+  const rows = AppTableSort.sortRows(_gtLeroyItems, _gtSort.leroy, GT_LEROY_COLS).map(r => {
     const tipoCls = 'lm-badge-' + (r.tipo || '').toLowerCase().replace(/\s+/g, '-');
     return `<tr>
       <td><span class="lm-type-badge ${_gtEsc(tipoCls)}">${_gtEsc(r.tipo||'—')}</span></td>
@@ -1171,10 +1223,7 @@ function _gtLeroyList() {
     </tr>`;
   }).join('');
   return `<div class="gt-table-wrap"><table class="gt-list-table">
-    <thead><tr>
-      <th>Tipo</th><th>Batente</th><th>Modelo</th><th>Local</th>
-      <th>Linha/Cor</th><th>Largura</th><th>Preço Leroy</th><th>Preço Concrem</th><th>Ações</th>
-    </tr></thead>
+    ${_gtThead('leroy')}
     <tbody>${rows}</tbody>
   </table></div>`;
 }

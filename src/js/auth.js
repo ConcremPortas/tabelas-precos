@@ -465,9 +465,7 @@ function renderUsuarios() {
     <div class="table-card">
       <div class="table-wrap">
         <table>
-          <thead><tr>
-            <th>Nome</th><th>E-mail</th><th>Nível</th><th>Status</th><th>Criado em</th><th>Ações</th>
-          </tr></thead>
+          <thead id="usuarios-thead">${_usrThead()}</thead>
           <tbody id="usuarios-tbody">
             <tr><td colspan="6" style="text-align:center;padding:32px;color:#718096">Carregando…</td></tr>
           </tbody>
@@ -583,18 +581,46 @@ function fecharModal(id) {
   if (el) el.style.display = 'none';
 }
 
-async function carregarTabelaUsuarios() {
-  const { data } = await _sb
-    .from('concremtp_usuarios').select('*').order('nome');
+// ── ORDENAÇÃO DA TABELA DE USUÁRIOS (window.AppTableSort) ────────────────────
+// Nível usa 'status' porque a ordem é hierárquica (Administrador → Gerente →
+// Vendedor), não alfabética. Status usa booleano para respeitar Ativo/Inativo.
+const USR_COLS = [
+  { key: 'nome',      label: 'Nome',      type: 'text' },
+  { key: 'email',     label: 'E-mail',    type: 'text' },
+  { key: 'nivel',     label: 'Nível',     type: 'status', statusOrder: ['administrador', 'gerente', 'vendedor'] },
+  { key: 'ativo',     label: 'Status',    type: 'boolean', getValue: u => !!u.ativo },
+  { key: 'criado_em', label: 'Criado em', type: 'date' },
+  { key: 'acoes',     label: 'Ações',     sortable: false },
+];
+
+let _usrSort = AppTableSort.newState();
+let _usrRows = [];   // último conjunto carregado do banco, na ordem recebida
+
+function _usrThead() {
+  return '<tr>' + AppTableSort.headerRow(USR_COLS, _usrSort, c => `usrSortBy('${c.key}')`) + '</tr>';
+}
+
+function usrSortBy(key) {
+  _usrSort = AppTableSort.nextState(_usrSort, key, USR_COLS);
+  _usrRenderTabela();
+  const btn = document.querySelector('#usuarios-thead [data-sort-key="' + key + '"]');
+  if (btn) btn.focus();
+}
+
+function _usrRenderTabela() {
+  const thead = document.getElementById('usuarios-thead');
   const tbody = document.getElementById('usuarios-tbody');
-  if (!tbody || !data) return;
+  if (!tbody) return;
+  if (thead) thead.innerHTML = _usrThead();
+
   const badges = {
     administrador: 'badge-adm', gerente: 'badge-ger', vendedor: 'badge-vnd'
   };
   const labels = {
     administrador: 'Administrador', gerente: 'Gerente', vendedor: 'Vendedor'
   };
-  tbody.innerHTML = data.map(u => `
+
+  tbody.innerHTML = AppTableSort.sortRows(_usrRows, _usrSort, USR_COLS).map(u => `
     <tr>
       <td>${_esc(u.nome)}</td>
       <td>${_esc(u.email)}</td>
@@ -622,6 +648,16 @@ async function carregarTabelaUsuarios() {
         </button>` : ''}
       </td>
     </tr>`).join('');
+
+  if (typeof window.applySearch === 'function') window.applySearch();
+}
+
+async function carregarTabelaUsuarios() {
+  const { data } = await _sb
+    .from('concremtp_usuarios').select('*').order('nome');
+  if (!data) return;
+  _usrRows = data;          // ordem original do banco (por nome)
+  _usrRenderTabela();       // a ordenação escolhida sobrevive ao recarregamento
 }
 
 async function toggleAtivo(id, ativo) {
